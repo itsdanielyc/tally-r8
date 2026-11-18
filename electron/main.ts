@@ -1,23 +1,14 @@
-// The main process: the "backend" of this app, the way Rust is in the Tauri
-// template. It answers the bridge's IPC calls. The greeting is implemented
-// here on its own, not imported from contracts/, so the real-shell suite
-// (tests/e2e) is what holds it to the contract.
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+// The main process: the backend. It opens the ledger in the data folder,
+// answers the bridge's IPC calls through the one service, and owns the window.
+import { app, BrowserWindow, shell } from "electron";
 import { join } from "node:path";
-import { channels, type PlatformInfo } from "./bridge";
+import { openBackend } from "./backend";
+import { registerIpc } from "./ipc";
 
-function greet(name: string): string {
-  return `Hello, ${name}! You've been greeted from the main process!`;
-}
-
-function platformInfo(): PlatformInfo {
-  return {
-    os: process.platform,
-    arch: process.arch,
-    electron: process.versions.electron,
-    packaged: app.isPackaged,
-  };
-}
+// The real-shell suite gives every run its own data folder. Nothing else sets
+// this; without it the ledger lives in the normal per-user app data folder.
+const dataDir = process.env.TALLY_DATA_DIR;
+if (dataDir) app.setPath("userData", dataDir);
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -44,21 +35,34 @@ function createWindow(): void {
   else void win.loadFile(join(import.meta.dirname, "../renderer/index.html"));
 }
 
-function start(): void {
-  ipcMain.handle(channels.greet, (_e, name: unknown) => greet(String(name)));
-  ipcMain.handle(channels.platformInfo, () => platformInfo());
+async function start(): Promise<void> {
+  const service = await openBackend(app.getPath("userData"));
+  registerIpc(service);
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 }
 
-// A main process that cannot start has nothing to show the error in: log it
-// and exit non-zero so the real-shell suite and the installer test both fail.
-app.whenReady().then(start).catch((error: unknown) => {
-  console.error(error);
-  app.exit(1);
-});
+// Two copies of Tally writing one ledger would overwrite each other's
+// changes, so a second launch hands over to the first and quits.
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
+  // A main process that cannot start has nothing to show the error in: log it
+  // and exit non-zero so the real-shell suite and the installer test both fail.
+  app.whenReady().then(start).catch((error: unknown) => {
+    console.error(error);
+    app.exit(1);
+  });
+}
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();

@@ -3,7 +3,9 @@
 // test plus the real-shell suite keep the mock and main from drifting apart.
 import { describe, expect, it } from "vitest";
 import { greeting } from "../../contracts/greet";
-import { mock } from "../../src/api";
+import { createMock } from "../../src/mock";
+
+const mock = createMock();
 
 describe("mock backend conformance", () => {
   it("greets exactly as the contract says", async () => {

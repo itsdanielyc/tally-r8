@@ -4,8 +4,13 @@ import { contextBridge, ipcRenderer } from "electron";
 import { channels, type ElectronBridge } from "./bridge";
 
 const bridge: ElectronBridge = {
+  load: () => ipcRenderer.invoke(channels.load),
+  addTransaction: (input) => ipcRenderer.invoke(channels.addTransaction, input),
+  updateTransaction: (id, input) => ipcRenderer.invoke(channels.updateTransaction, id, input),
+  deleteTransaction: (id) => ipcRenderer.invoke(channels.deleteTransaction, id),
+  setCurrency: (code) => ipcRenderer.invoke(channels.setCurrency, code),
   greet: (name) => ipcRenderer.invoke(channels.greet, name),
   platformInfo: () => ipcRenderer.invoke(channels.platformInfo),
 };
 
-contextBridge.exposeInMainWorld("electronBridge", bridge);
+contextBridge.exposeInMainWorld("tallyBridge", bridge);

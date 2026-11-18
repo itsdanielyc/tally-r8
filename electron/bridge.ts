@@ -1,5 +1,9 @@
-// The typed surface the preload exposes to the renderer as window.electronBridge.
-// The renderer imports only these types; the preload and main implement them.
+// The typed surface the preload exposes to the renderer as window.tallyBridge,
+// and the IPC channel names main and preload share. The bridge is exactly
+// TallyApi (contracts/tally.ts) plus the scaffold's sample calls, which go
+// when slice 1's screens replace the sample page.
+import type { TallyApi } from "../contracts/tally";
+
 export type PlatformInfo = {
   /** process.platform in the main process: win32 | darwin | linux */
   os: string;
@@ -11,13 +15,20 @@ export type PlatformInfo = {
   packaged: boolean;
 };
 
-export interface ElectronBridge {
+type SampleBridge = {
   greet(name: string): Promise<string>;
   platformInfo(): Promise<PlatformInfo>;
-}
+};
 
-/** IPC channel names, shared by main and preload. */
+export type ElectronBridge = TallyApi & SampleBridge;
+
+/** One channel per bridge call; `satisfies` fails the build if one is missing. */
 export const channels = {
+  load: "tally:load",
+  addTransaction: "tally:add-transaction",
+  updateTransaction: "tally:update-transaction",
+  deleteTransaction: "tally:delete-transaction",
+  setCurrency: "tally:set-currency",
   greet: "app:greet",
   platformInfo: "app:platform-info",
-} as const;
+} as const satisfies Record<keyof ElectronBridge, string>;
