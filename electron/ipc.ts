@@ -5,8 +5,8 @@ import { ipcMain } from "electron";
 import type { ImportMapping, PickedFile, Result, TransactionInput } from "../contracts/tally";
 import type { TallyService } from "../core/service";
 import { channels } from "./bridge";
-import { chooseCsvToOpen } from "./dialogs";
-import { readCsvFile } from "./files";
+import { chooseCsvToOpen, chooseCsvToSave } from "./dialogs";
+import { readCsvFile, writeCsvFile } from "./files";
 
 const text = (value: unknown): string => (typeof value === "string" ? value : "");
 // The service checks every field of these objects; the casts only name them.
@@ -18,6 +18,11 @@ const budget = (value: unknown): number | null => (value === null ? null : typeo
 async function pickCsvFile(): Promise<Result<PickedFile | null>> {
   const path = await chooseCsvToOpen();
   return path === null ? { ok: true, value: null } : readCsvFile(path);
+}
+
+async function saveCsvFile(name: string, csv: string): Promise<Result<string | null>> {
+  const path = await chooseCsvToSave(name || "tally-export.csv");
+  return path === null ? { ok: true, value: null } : writeCsvFile(path, csv);
 }
 
 export function registerIpc(service: TallyService): void {
@@ -35,5 +40,7 @@ export function registerIpc(service: TallyService): void {
   ipcMain.handle(channels.createRule, (_e, contains: unknown, categoryId: unknown) => service.createRule(text(contains), text(categoryId)));
   ipcMain.handle(channels.deleteRule, (_e, id: unknown) => service.deleteRule(text(id)));
   ipcMain.handle(channels.applyRules, () => service.applyRules());
+  ipcMain.handle(channels.undo, () => service.undo());
+  ipcMain.handle(channels.saveCsvFile, (_e, name: unknown, csv: unknown) => saveCsvFile(text(name), text(csv)));
   ipcMain.handle(channels.setBudget, (_e, id: unknown, amount: unknown) => service.setBudget(text(id), budget(amount)));
 }

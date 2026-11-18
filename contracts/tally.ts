@@ -56,6 +56,8 @@ export type Snapshot = {
   categories: Category[];
   /** In the order they were made; when several match, the first wins. */
   rules: Rule[];
+  /** The one change that can be undone right now, or null. */
+  undo: { label: string } | null;
 };
 
 type TallyErrorCode = "invalid" | "not_found" | "readonly" | "io";
@@ -83,6 +85,9 @@ export type ImportMapping = {
   amount: { kind: "signed"; column: number } | { kind: "split"; debit: number; credit: number };
   dateOrder: DateOrder;
   decimal: "." | ",";
+  /** Optional columns. A category name not in the ledger is created on import. */
+  category?: number | null;
+  note?: number | null;
 };
 
 /** A CSV file the person picked, already decoded to text. */
@@ -117,6 +122,11 @@ export interface LedgerApi {
   setBudget(categoryId: string, amount: number | null): Promise<Result<Snapshot>>;
   /** Applies the rules to every uncategorised transaction. */
   applyRules(): Promise<Result<RulesOutcome>>;
+  /**
+   * Undoes the most recent delete (of a transaction or a category), merge or
+   * import, once, if nothing else has changed since.
+   */
+  undo(): Promise<Result<Snapshot>>;
   /** Imports every accepted row together, or none. Rules categorise the rows. */
   importCsv(text: string, mapping: ImportMapping): Promise<Result<ImportOutcome>>;
 }
@@ -125,4 +135,6 @@ export interface LedgerApi {
 export interface TallyApi extends LedgerApi {
   /** Asks for a CSV file; ok with null when the person cancels. */
   pickCsvFile(): Promise<Result<PickedFile | null>>;
+  /** Asks where to save `text` as a CSV file; ok with the path, or null when the person cancels. */
+  saveCsvFile(suggestedName: string, text: string): Promise<Result<string | null>>;
 }

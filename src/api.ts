@@ -29,6 +29,8 @@ function native(bridge: ElectronBridge): Backend {
     deleteRule: (id) => bridge.deleteRule(id),
     applyRules: () => bridge.applyRules(),
     setBudget: (categoryId, amount) => bridge.setBudget(categoryId, amount),
+    undo: () => bridge.undo(),
+    saveCsvFile: (suggestedName, text) => bridge.saveCsvFile(suggestedName, text),
     pickCsvFile: () => bridge.pickCsvFile(),
   };
 }

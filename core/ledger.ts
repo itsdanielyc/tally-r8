@@ -45,7 +45,7 @@ function byName(a: Category, b: Category): number {
   return x < y ? -1 : x > y ? 1 : 0;
 }
 
-export function toSnapshot(ledger: Ledger, status: LedgerStatus, file: string): Snapshot {
+export function toSnapshot(ledger: Ledger, status: LedgerStatus, file: string, undo: string | null = null): Snapshot {
   return {
     status,
     file,
@@ -53,5 +53,6 @@ export function toSnapshot(ledger: Ledger, status: LedgerStatus, file: string): 
     transactions: ledger.transactions.map((t) => ({ ...t })).sort(newestFirst),
     categories: ledger.categories.map((c) => ({ ...c })).sort(byName),
     rules: ledger.rules.map((r) => ({ ...r })),
+    undo: undo === null ? null : { label: undo },
   };
 }

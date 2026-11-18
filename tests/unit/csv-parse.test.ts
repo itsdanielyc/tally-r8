@@ -70,7 +70,7 @@ describe("inspectCsv", () => {
     expect(i.delimiter).toBe(",");
     expect(i.headerRow).toBe(0);
     expect(i.columns).toEqual(["Date", "Description", "Amount", "Balance"]);
-    expect(i.mapping).toEqual({ delimiter: ",", headerRow: 0, date: 0, payee: 1, amount: { kind: "signed", column: 2 }, dateOrder: "YMD", decimal: "." });
+    expect(i.mapping).toEqual({ delimiter: ",", headerRow: 0, date: 0, payee: 1, amount: { kind: "signed", column: 2 }, dateOrder: "YMD", decimal: ".", category: null, note: null });
   });
 
   it("skips a preamble, finds the header, and guesses debit and credit with decimal commas", () => {
@@ -78,7 +78,7 @@ describe("inspectCsv", () => {
     expect(i.delimiter).toBe(";");
     expect(i.headerRow).toBe(2);
     expect(i.records[2].line).toBe(4);
-    expect(i.mapping).toEqual({ delimiter: ";", headerRow: 2, date: 0, payee: 1, amount: { kind: "split", debit: 2, credit: 3 }, dateOrder: "DMY", decimal: "," });
+    expect(i.mapping).toEqual({ delimiter: ";", headerRow: 2, date: 0, payee: 1, amount: { kind: "split", debit: 2, credit: 3 }, dateOrder: "DMY", decimal: ",", category: null, note: 4 });
   });
 
   it("without a header, names columns by number and guesses from the contents", () => {

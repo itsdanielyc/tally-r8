@@ -15,6 +15,8 @@ export interface Backend extends TallyApi {
 
 const memory: LedgerStore = { file: "memory", save: async () => undefined };
 const MAX_BYTES = 10 * 1024 * 1024;
+// Exports start with a byte order mark so spreadsheet apps read accents right.
+const BOM = String.fromCharCode(0xfeff);
 
 function pickInBrowser(): Promise<Result<PickedFile | null>> {
   return new Promise((resolve) => {
@@ -35,6 +37,17 @@ function pickInBrowser(): Promise<Result<PickedFile | null>> {
   });
 }
 
+/** Where the main process shows a save dialog, the mock hands the browser a download. */
+function downloadInBrowser(name: string, text: string): Result<string | null> {
+  const url = URL.createObjectURL(new Blob([BOM + text], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  return { ok: true, value: name };
+}
+
 export function createMock(): Backend {
   const service = new TallyService({ ledger: emptyLedger(), status: { kind: "ok" } }, memory);
   return {
@@ -53,6 +66,8 @@ export function createMock(): Backend {
     deleteRule: (id) => service.deleteRule(id),
     applyRules: () => service.applyRules(),
     setBudget: (categoryId, amount) => service.setBudget(categoryId, amount),
+    undo: () => service.undo(),
+    saveCsvFile: async (suggestedName, text) => downloadInBrowser(suggestedName, text),
     pickCsvFile: () => pickInBrowser(),
   };
 }
