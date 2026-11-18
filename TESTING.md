@@ -27,7 +27,7 @@ Tier 1 is windows-x64, macos-arm64, linux-x64 (`keel.json`); there is no Tier
 | Import a bank CSV: detect, map, preview, rejected rows, duplicates skipped, all or none | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/csv-parse.test.ts`, `tests/unit/import-plan.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/import.test.ts` (decoding, all or none on disk); L4/L5 `tests/ui/import.spec.ts`; L6 `tests/e2e/import.spec.ts` (open-dialog bypass `TALLY_OPEN_PATH`) |
 | A 2,000-row CSV imports in under five seconds | L3, L6 | L3 `tests/integration/import.test.ts` (read from disk, imported, saved); L6 `tests/e2e/import.spec.ts` (timed from choosing the file to the list showing 2000) |
 | Categorise by hand and by payee rules; delete and merge categories | L1, L2, L3, L4, L5 | L1 `tests/unit/categories.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/store.test.ts` (version 1 opens as version 2, version 2 fixture); L4/L5 `tests/ui/categories.spec.ts` |
-| A month: totals per category, income against spending, budgets left or over | L1, L4, L5, L6 | |
+| A month: totals per category, income against spending, budgets left or over | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/summary.test.ts` (500 generated ledgers add up to the cent); L2 `tests/contract/ledger.contract.test.ts` (budgets); L3 `tests/integration/store.test.ts` (version 2 opens as version 3); L4/L5 `tests/ui/summary.spec.ts`; L6 `tests/e2e/record.spec.ts` (the current month's net) |
 | Find, filter, export; the export imports back as the same transactions | L1, L2, L4, L5, L6 | |
 | Undo the last delete, merge or import, once | L1, L2, L4, L6 | |
 | First launch from the installer | L7 | `scripts/installer-test.ps1`, `scripts/installer-test.sh` |
