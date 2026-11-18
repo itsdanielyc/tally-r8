@@ -24,7 +24,8 @@ function rowActions(ctx: Ctx, t: Transaction): HTMLElement {
       ctx.ui.confirmDeleteId = null;
       if (ctx.ui.editingId === t.id) ctx.ui.editingId = null;
       const error = ctx.apply(await ctx.backend.deleteTransaction(t.id));
-      if (error) set({});
+      // The row stays; say why, instead of redrawing in silence.
+      if (error) set({ flash: error.message });
     };
     return h("td", { class: "actions confirm" },
       h("span", { class: "visually-hidden" }, "Delete this transaction?"),
@@ -91,6 +92,11 @@ function listContent(ctx: Ctx): (HTMLElement | null)[] {
 }
 
 export function transactionsView(ctx: Ctx): HTMLElement {
+  // A filter on a category that was deleted or merged away would hide everything: drop it.
+  const category = ctx.ui.filter.category;
+  if (category !== "" && category !== "none" && !ctx.snapshot.categories.some((c) => c.id === category)) {
+    ctx.ui.filter = { ...ctx.ui.filter, category: "" };
+  }
   const count = ctx.snapshot.transactions.length;
   const list = h("div", { class: "list-area" });
   const drawList = () => replace(list, ...listContent(ctx));

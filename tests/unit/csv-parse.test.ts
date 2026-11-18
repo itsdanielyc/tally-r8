@@ -23,13 +23,34 @@ describe("parseCsv", () => {
     expect(parseCsv(text, ";").map((r) => [r.line, r.cells[0]])).toEqual([[1, "h1"], [2, "one\r\ntwo"], [5, "three"], [6, "four"]]);
   });
 
-  it("skips blank lines, drops a byte order mark, and keeps an unterminated quote to the end", () => {
+  it("skips blank lines and drops a byte order mark", () => {
     expect(parseCsv("\uFEFFa,b\n\n   \nc,d", ",").map((r) => r.cells)).toEqual([["a", "b"], ["c", "d"]]);
-    expect(parseCsv('a,"open\nstill', ",")[0].cells).toEqual(["a", "open\nstill"]);
+  });
+
+  it("an unterminated quote on the last record breaks only that record", () => {
+    expect(parseCsv('a,"open\nstill', ",")).toEqual([{ line: 1, cells: [], broken: true }, { line: 2, cells: ["still"] }]);
   });
 
   it("keeps empty fields, including trailing ones", () => {
     expect(parseCsv("a,,c,\n", ",")[0].cells).toEqual(["a", "", "c", ""]);
+  });
+
+  // Bug hunt M2: an unclosed quote used to swallow every later row into one cell.
+  it("marks a record whose quote never closes as broken and reads on from the next line", () => {
+    const records = parseCsv('d,p,a\n2026-01-05,"Joe\'s Diner,-12.00\n2026-01-06,Shop,-1.00\n2026-01-07,Bakery,-2.00\n', ",");
+    expect(records.map((r) => [r.line, r.broken ?? false, r.cells[1]])).toEqual([
+      [1, false, "p"], [2, true, undefined], [3, false, "Shop"], [4, false, "Bakery"],
+    ]);
+  });
+
+  it("still reads a quoted line break that does close", () => {
+    expect(parseCsv('a,"two\nlines"\nb,c', ",").map((r) => r.broken ?? false)).toEqual([false, false]);
+  });
+
+  // Bug hunt L1: a space before an opening quote used to split the field.
+  it("allows spaces between the delimiter and an opening quote", () => {
+    expect(parseCsv('2026-01-05, "Shop, Inc", -12.00', ",")[0].cells).toEqual(["2026-01-05", "Shop, Inc", " -12.00"]);
+    expect(parseCsv('a\t "b\tc"', "\t")[0].cells).toEqual(["a", "b\tc"]);
   });
 });
 
@@ -86,6 +107,13 @@ describe("inspectCsv", () => {
     expect(i.headerRow).toBeNull();
     expect(i.columns).toEqual(["Column 1", "Column 2", "Column 3"]);
     expect(i.mapping).toMatchObject({ date: 0, payee: 1, amount: { kind: "signed", column: 2 }, dateOrder: "MDY", decimal: "." });
+  });
+
+  // Bug hunt M3: "Value date" used to be taken for the amount column.
+  it("does not take a value date for the amount", () => {
+    const i = inspectCsv("Booking date,Value date,Description,Amount\n01.01.2026,02.01.2026,Shop,\"-1,00\"\n");
+    expect(i.mapping).toMatchObject({ date: 0, payee: 2, amount: { kind: "signed", column: 3 } });
+    expect(inspectCsv("Date,Text,Value\n2026-01-01,Shop,-1.00\n").mapping.amount).toEqual({ kind: "signed", column: 2 });
   });
 
   it("re-reads with a delimiter the person chose", () => {

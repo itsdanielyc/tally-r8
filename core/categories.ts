@@ -38,6 +38,7 @@ export function renameCategory(ledger: Ledger, id: unknown, name: unknown): Resu
   if (!find(ledger, id)) return noCategory(id);
   const checked = checkName(ledger, name, id as string);
   if (!checked.ok) return checked;
+  if (find(ledger, id)?.name === checked.value) return { ok: true, value: ledger };
   return { ok: true, value: { ...ledger, categories: ledger.categories.map((c) => (c.id === id ? { ...c, name: checked.value } : c)) } };
 }
 
@@ -96,6 +97,7 @@ export function setBudget(ledger: Ledger, id: unknown, amount: unknown): Result<
   if (!find(ledger, id)) return noCategory(id);
   const valid = amount === null || (typeof amount === "number" && Number.isInteger(amount) && amount > 0 && amount <= MAX_AMOUNT);
   if (!valid) return fail("invalid", "A budget must be more than zero, in whole minor units.", "budget");
+  if (find(ledger, id)?.budget === amount) return { ok: true, value: ledger };
   return { ok: true, value: { ...ledger, categories: ledger.categories.map((c) => (c.id === id ? { ...c, budget: amount } : c)) } };
 }
 

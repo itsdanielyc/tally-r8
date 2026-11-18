@@ -98,6 +98,19 @@ test("edits a transaction in the form, and Escape cancels an edit", async ({ pag
   expect((await cells(page))[0][1]).toBe("Corner deli");
 });
 
+// Bug hunt L8: two submits before the first finished used to add the transaction twice.
+test("a double submit adds the transaction once", async ({ page }) => {
+  await page.getByLabel("Amount").fill("3");
+  await page.getByLabel("Payee").fill("Once only");
+  await page.getByRole("form", { name: "New transaction" }).evaluate((f: HTMLFormElement) => {
+    f.requestSubmit();
+    f.requestSubmit();
+  });
+  await expect(page.getByTestId("count")).toHaveText("1 transaction");
+  await page.waitForTimeout(200);
+  await expect(page.getByTestId("count")).toHaveText("1 transaction");
+});
+
 test("deletes only after confirming in the row", async ({ page }) => {
   await add(page, { date: "2026-11-02", amount: "12.50", payee: "Corner shop" });
   await add(page, { date: "2026-11-03", amount: "3", payee: "Bakery" });
@@ -140,6 +153,15 @@ async function sample(page: Page): Promise<void> {
   await expect(rows(page)).toHaveCount(3);
   await page.getByLabel("Amount").blur();
 }
+
+// Visual QA (slice 6): with the Linux and macOS system fonts the date column
+// cut dates to "2026-11-…". Every date and amount must show whole on every OS.
+test("dates and amounts are shown whole, never cut off", async ({ page }) => {
+  await sample(page);
+  const cut = await page.locator("td.date, td.amount").evaluateAll((tds) =>
+    tds.filter((td) => td.scrollWidth > td.clientWidth).map((td) => td.textContent));
+  expect(cut).toEqual([]);
+});
 
 test("tier 1: accessibility structure is identical everywhere", async ({ page }) => {
   await sample(page);

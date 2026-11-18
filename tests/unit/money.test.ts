@@ -53,6 +53,23 @@ describe("parseAmount", () => {
   });
 });
 
+describe("bank amount formats (bug hunt L2)", () => {
+  it("reads a negative in brackets, and a CR or DR suffix", () => {
+    expect(value("(12.34)")).toBe(-1234);
+    expect(value("($1,234.50)")).toBe(-123450);
+    expect(value("12.34 CR")).toBe(1234);
+    expect(value("12.34 DR")).toBe(-1234);
+    expect(value("1.234,50 dr", 2, ",")).toBe(-123450);
+  });
+
+  it("accepts extra decimal places that are all zero, and still refuses real fractions", () => {
+    expect(value("1500.00", 0)).toBe(1500);
+    expect(value("12.340", 2)).toBe(1234);
+    expect(value("1500.50", 0)).toContain("more than 0 decimal places");
+    expect(value("12.345", 2)).toContain("more than 2 decimal places");
+  });
+});
+
 describe("parseTypedAmount (the entry form)", () => {
   const typed = (text: string, digits = 2) => {
     const r = parseTypedAmount(text, digits);
@@ -74,6 +91,18 @@ describe("parseTypedAmount (the entry form)", () => {
     expect(typed("")).toBe("Amount is empty.");
     expect(typed("12.345")).toBe(`Amount "12.345" has more than 2 decimal places.`);
     expect(typed("twelve")).toBe(`Amount "twelve" is not a number.`);
+    expect(typed("(5)")).toBe("Type the amount without a sign; choose Spending or Income.");
+  });
+
+  // Bug hunt L9: in a three-decimal currency "1,500" is 1,500.000 or 1.500.
+  it("refuses an amount that reads two ways, and takes it once it reads one way", () => {
+    expect(typed("1,500", 3)).toBe('Amount "1,500" could mean 1,500.000 or 1.500; type it without a thousands separator.');
+    expect(typed("1,500.000", 3)).toBe(1500000);
+    expect(typed("1.500", 3)).toBe(1500); // a point is always the decimal separator
+    expect(typed("1500", 3)).toBe(1500000);
+    expect(typed("1,5", 3)).toBe(1500);
+    expect(typed("1,500", 2)).toBe(150000);
+    expect(typed("1.500", 0)).toBe('Amount "1.500" has more than 0 decimal places.');
   });
 });
 

@@ -63,6 +63,20 @@ test("searches payee and note text, and filters by category, dates and amounts",
   await expect(page.getByTestId("shown")).toHaveText("Showing all 7");
 });
 
+// Bug hunt L6: a filter on a category that a merge removed used to hide everything.
+test("a filter on a category that is merged away is dropped", async ({ page }) => {
+  await seed(page);
+  await page.getByLabel("In", { exact: true }).selectOption({ label: "Eating out" });
+  await expect(page.getByTestId("shown")).toHaveText("Showing 1 of 7");
+  await nav(page, "Categories");
+  await page.getByRole("combobox", { name: /^Merge/ }).selectOption({ label: "Eating out" });
+  await page.getByRole("combobox", { name: /^into/ }).selectOption({ label: "Groceries" });
+  await page.getByRole("button", { name: "Merge", exact: true }).click();
+  await nav(page, "Transactions");
+  await expect(page.getByTestId("shown")).toHaveText("Showing all 7");
+  await expect(page.getByRole("button", { name: "Export shown to CSV" })).toBeEnabled();
+});
+
 test("says what in the filter it cannot read", async ({ page }) => {
   await seed(page);
   await page.getByLabel("At least").fill("lots");

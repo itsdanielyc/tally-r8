@@ -79,8 +79,13 @@ export function updateTransaction(ledger: Ledger, id: unknown, input: unknown): 
   if (index < 0) return notFound(id);
   const checked = validateInput(input, ledger);
   if (!checked.ok) return checked;
+  const old = ledger.transactions[index];
+  const v = checked.value;
+  // Saved without a change: the same ledger, so nothing is written and undo is kept.
+  const same = old.date === v.date && old.payee === v.payee && old.amount === v.amount && old.categoryId === v.categoryId && old.note === v.note;
+  if (same) return { ok: true, value: ledger };
   const transactions = [...ledger.transactions];
-  transactions[index] = { id: transactions[index].id, ...checked.value };
+  transactions[index] = { id: old.id, ...v };
   return { ok: true, value: { ...ledger, transactions } };
 }
 

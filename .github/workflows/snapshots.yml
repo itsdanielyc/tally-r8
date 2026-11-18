@@ -64,8 +64,22 @@ jobs:
           pattern: snapshots-*
           path: incoming
       - name: Merge the three capture sets
+        # Each capture set also holds the other OSes' baselines as they were
+        # checked out. Take from each set only the pixel baselines of the OS
+        # that captured it, or the last set copied would put back stale ones.
+        # The shared ARIA and geometry snapshots come from the Windows set.
         run: |
-          for d in incoming/snapshots-*; do cp -R "$d"/. tests/ui/__snapshots__/; done
+          dest="$GITHUB_WORKSPACE/tests/ui/__snapshots__"
+          for d in incoming/snapshots-*; do
+            case "$d" in
+              *ubuntu*) p=linux ;;
+              *macos*) p=darwin ;;
+              *windows*) p=win32 ;;
+              *) echo "unknown capture set $d"; exit 1 ;;
+            esac
+            (cd "$d" && find . -type f -name "*-$p.png" -exec cp --parents {} "$dest/" \;)
+          done
+          (cd incoming/snapshots-windows-latest && find . -type f ! -name "*.png" -exec cp --parents {} "$dest/" \;)
           git status --short tests/ui/__snapshots__
       - name: Commit the baselines
         env:

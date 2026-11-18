@@ -5,7 +5,7 @@ import type { Result, Snapshot } from "../../contracts/tally";
 import type { Ctx } from "../app";
 import { h } from "../dom";
 
-type Send = (ctx: Ctx, call: Promise<Result<Snapshot>>, errorEl: HTMLElement, done?: string | null) => Promise<void>;
+type Send = (ctx: Ctx, call: Promise<Result<Snapshot>>, errorEl: HTMLElement, done?: string | null) => Promise<boolean>;
 
 function ruleForm(ctx: Ctx, send: Send): HTMLElement {
   const contains = h("input", { id: "rule-contains", name: "contains", autocomplete: "off", maxlength: 100 });
