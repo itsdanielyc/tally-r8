@@ -14,7 +14,7 @@ function invalid(field: string, message: string): { ok: false; error: TallyError
 }
 
 /** Trims and collapses runs of spaces, so "  Corner   shop " is "Corner shop". */
-function cleanText(text: string): string {
+export function cleanText(text: string): string {
   return text.trim().replace(/\s+/g, " ");
 }
 
@@ -22,7 +22,9 @@ function field(input: unknown, key: string): unknown {
   return typeof input === "object" && input !== null ? (input as Record<string, unknown>)[key] : undefined;
 }
 
-function checkAmount(amount: unknown, ledger: Ledger): string | null {
+type Rules = Pick<Ledger, "settings" | "categories">;
+
+function checkAmount(amount: unknown, ledger: Rules): string | null {
   if (typeof amount !== "number" || !Number.isInteger(amount)) return "Amount must be a whole number of minor units.";
   if (amount === 0) return "Amount cannot be zero.";
   if (Math.abs(amount) > MAX_AMOUNT) {
@@ -32,7 +34,7 @@ function checkAmount(amount: unknown, ledger: Ledger): string | null {
   return null;
 }
 
-function checkCategory(categoryId: unknown, ledger: Ledger): string | null {
+function checkCategory(categoryId: unknown, ledger: Rules): string | null {
   if (categoryId === null) return null;
   if (typeof categoryId !== "string" || !ledger.categories.some((c) => c.id === categoryId)) {
     return "That category does not exist.";
@@ -41,7 +43,7 @@ function checkCategory(categoryId: unknown, ledger: Ledger): string | null {
 }
 
 /** Checks every field and returns the cleaned input, or the first problem. */
-export function validateInput(input: unknown, ledger: Ledger): Result<TransactionInput> {
+export function validateInput(input: unknown, ledger: Rules): Result<TransactionInput> {
   const date = field(input, "date");
   if (typeof date !== "string" || !isValidIsoDate(date)) return invalid("date", "Date must be a real day, as YYYY-MM-DD.");
   const rawPayee = field(input, "payee");

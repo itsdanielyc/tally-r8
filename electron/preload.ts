@@ -9,6 +9,8 @@ const bridge: ElectronBridge = {
   updateTransaction: (id, input) => ipcRenderer.invoke(channels.updateTransaction, id, input),
   deleteTransaction: (id) => ipcRenderer.invoke(channels.deleteTransaction, id),
   setCurrency: (code) => ipcRenderer.invoke(channels.setCurrency, code),
+  importCsv: (text, mapping) => ipcRenderer.invoke(channels.importCsv, text, mapping),
+  pickCsvFile: () => ipcRenderer.invoke(channels.pickCsvFile),
 };
 
 contextBridge.exposeInMainWorld("tallyBridge", bridge);

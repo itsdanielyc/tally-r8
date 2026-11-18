@@ -20,6 +20,8 @@ function native(bridge: ElectronBridge): Backend {
     updateTransaction: (id, input) => bridge.updateTransaction(id, input),
     deleteTransaction: (id) => bridge.deleteTransaction(id),
     setCurrency: (code) => bridge.setCurrency(code),
+    importCsv: (text, mapping) => bridge.importCsv(text, mapping),
+    pickCsvFile: () => bridge.pickCsvFile(),
   };
 }
 

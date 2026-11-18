@@ -5,7 +5,8 @@
 //
 // The main process runs this service on the ledger file (electron/store.ts);
 // the labelled mock runs the very same service on memory (src/mock.ts).
-import type { LedgerStatus, Result, Snapshot, TallyApi, TransactionInput } from "../contracts/tally";
+import type { ImportMapping, ImportOutcome, LedgerApi, LedgerStatus, Result, Snapshot, TransactionInput } from "../contracts/tally";
+import { applyImport, checkMapping, planImport } from "./import-plan";
 import { type Ledger, toSnapshot } from "./ledger";
 import { setCurrency } from "./settings";
 import { addTransaction, deleteTransaction, updateTransaction } from "./transactions";
@@ -21,7 +22,7 @@ export type OpenedLedger = { ledger: Ledger; status: LedgerStatus };
 
 type Change = (ledger: Ledger) => Result<Ledger>;
 
-export class TallyService implements TallyApi {
+export class TallyService implements LedgerApi {
   private ledger: Ledger;
   private readonly status: LedgerStatus;
   private readonly store: LedgerStore;
@@ -51,6 +52,20 @@ export class TallyService implements TallyApi {
 
   setCurrency(code: string): Promise<Result<Snapshot>> {
     return this.commit((ledger) => setCurrency(ledger, code));
+  }
+
+  async importCsv(text: string, mapping: ImportMapping): Promise<Result<ImportOutcome>> {
+    let counts = { added: 0, duplicates: 0, rejected: 0 };
+    const result = await this.commit((ledger) => {
+      const checked = checkMapping(mapping);
+      if (!checked.ok) return checked;
+      if (typeof text !== "string") return { ok: false, error: { code: "invalid", message: "The file text is missing." } };
+      const plan = planImport(text, checked.value, ledger);
+      if (!plan.ok) return plan;
+      counts = { added: plan.value.rows.length, duplicates: plan.value.duplicates, rejected: plan.value.rejected.length };
+      return { ok: true, value: applyImport(ledger, plan.value) };
+    });
+    return result.ok ? { ok: true, value: { snapshot: result.value, ...counts } } : result;
   }
 
   private snapshot(): Snapshot {
