@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "settings": {
+    "currency": "EUR"
+  },
+  "transactions": [
+    {
+      "id": "t1",
+      "date": "2026-10-30",
+      "payee": "Corner shop",
+      "amount": -1250,
+      "categoryId": null,
+      "note": ""
+    },
+    {
+      "id": "t2",
+      "date": "2026-10-31",
+      "payee": "Employer",
+      "amount": 300000,
+      "categoryId": null,
+      "note": "October"
+    }
+  ],
+  "categories": [],
+  "nextId": 3
+}

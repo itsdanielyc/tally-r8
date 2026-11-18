@@ -1,41 +1,28 @@
 // The seam between the UI and the backend. Inside Electron the calls go
-// through the preload bridge (window.electronBridge) over IPC to the main
-// process; in a plain browser (Vite dev server, Playwright, a web build) a
-// labelled mock answers instead. The mock is held to the same contract as the
-// main process by tests/unit/contract.test.ts and by the real-shell suite, so
-// a UI test that passes against the mock means something.
-import type { ElectronBridge, PlatformInfo } from "../electron/bridge";
-import { greeting } from "../contracts/greet";
-
-export interface Backend {
-  readonly kind: "native" | "mock";
-  greet(name: string): Promise<string>;
-  platformInfo(): Promise<PlatformInfo>;
-}
+// through the preload bridge (window.tallyBridge) over IPC to the main
+// process; in a plain browser a labelled mock answers instead (src/mock.ts).
+import type { ElectronBridge } from "../electron/bridge";
+import { type Backend, createMock } from "./mock";
 
 declare global {
   interface Window {
-    electronBridge?: ElectronBridge;
+    tallyBridge?: ElectronBridge;
   }
 }
 
-const bridge = typeof window !== "undefined" ? window.electronBridge : undefined;
+function native(bridge: ElectronBridge): Backend {
+  return {
+    kind: "native",
+    load: () => bridge.load(),
+    addTransaction: (input) => bridge.addTransaction(input),
+    updateTransaction: (id, input) => bridge.updateTransaction(id, input),
+    deleteTransaction: (id) => bridge.deleteTransaction(id),
+    setCurrency: (code) => bridge.setCurrency(code),
+    greet: (name) => bridge.greet(name),
+    platformInfo: () => bridge.platformInfo(),
+  };
+}
 
-export const mock: Backend = {
-  kind: "mock",
-  greet: async (name) => greeting(name),
-  platformInfo: async () => ({
-    os: "mock",
-    arch: "mock",
-    electron: "mock",
-    packaged: false,
-  }),
-};
+const bridge = typeof window !== "undefined" ? window.tallyBridge : undefined;
 
-export const backend: Backend = bridge
-  ? {
-      kind: "native",
-      greet: (name) => bridge.greet(name),
-      platformInfo: () => bridge.platformInfo(),
-    }
-  : mock;
+export const backend: Backend = bridge ? native(bridge) : createMock();

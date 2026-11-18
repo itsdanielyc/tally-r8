@@ -17,7 +17,8 @@ builds everything (solo).
 ## Commands
 
 - lint (L0): `npm run lint` (tsc three times, ESLint with the size limits, knip)
-- unit and contracts (L1/L2): `npm run test:unit`
+- unit (L1): `npm run test:unit`; contract (L2, mock vs the real backend): `npm run test:contract`
+- integration (L3, the ledger file in temp folders): `npm run test:integration`
 - ui (L4/L5): `npm run test:ui` (Playwright, chromium, against the labelled mock; starts Vite itself)
 - e2e (L6): `npm run test:e2e` (needs `npm run build` first)
 - installers (L7): the `installers` workflow; locally `npm run package`

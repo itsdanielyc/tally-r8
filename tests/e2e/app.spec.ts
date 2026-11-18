@@ -40,7 +40,7 @@ test.describe("tally in the real shell", () => {
     await expect(win.getByTestId("backend-badge")).toHaveText("native");
     // contextIsolation and the sandbox: the page sees the bridge, not Node.
     const exposed = await win.evaluate(() => ({
-      bridge: typeof window.electronBridge,
+      bridge: typeof window.tallyBridge,
       require: typeof (window as unknown as { require?: unknown }).require,
       process: typeof (window as unknown as { process?: unknown }).process,
     }));
@@ -64,7 +64,7 @@ test.describe("tally in the real shell", () => {
     expect(["x64", "arm64"]).toContain(main.arch);
     expect(main.packaged).toBe(false);
 
-    const viaBridge = await win.evaluate(() => window.electronBridge!.platformInfo());
+    const viaBridge = await win.evaluate(() => window.tallyBridge!.platformInfo());
     expect(viaBridge).toMatchObject(main);
     await expect(win.getByTestId("platform")).toHaveText(`${main.os} / ${main.arch}`);
 
