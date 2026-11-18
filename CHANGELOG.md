@@ -54,13 +54,15 @@ silicon and Linux x64, in one local file.
 - Renaming a category after a refused name no longer reopens the editor.
 - A double click on Add or Import no longer adds the transactions twice.
 - Dates are no longer cut off in the lists with the Linux and macOS system fonts.
+- The "Debit and credit columns" choice is no longer cut off on Linux, and the
+  Search field has room for its text.
 
 ### Pull requests
 
 In merge order: #1 plan; #2, #3 scaffold and its baselines; #4, #7 record
 transactions; #8, #10 import a bank CSV; #11, #12 categories and rules; #13, #5
 monthly summary and budgets; #9, #6 find, export, undo; #14 bug-hunt fixes;
-#15 release readiness.
+#15 release readiness; #16 layout fixes from looking at the release commit.
 
 ### Known defects
 
