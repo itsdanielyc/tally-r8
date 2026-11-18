@@ -21,6 +21,8 @@ export type TransactionInput = Omit<Transaction, "id">;
 export type Category = {
   id: string;
   name: string;
+  /** The monthly budget in minor units (the same every month), or null for none. */
+  budget: number | null;
 };
 
 /** "Payee contains this text, use this category". Matching ignores case. */
@@ -111,6 +113,8 @@ export interface LedgerApi {
   mergeCategories(fromId: string, intoId: string): Promise<Result<Snapshot>>;
   createRule(contains: string, categoryId: string): Promise<Result<Snapshot>>;
   deleteRule(id: string): Promise<Result<Snapshot>>;
+  /** Sets a category's monthly budget; null removes it. */
+  setBudget(categoryId: string, amount: number | null): Promise<Result<Snapshot>>;
   /** Applies the rules to every uncategorised transaction. */
   applyRules(): Promise<Result<RulesOutcome>>;
   /** Imports every accepted row together, or none. Rules categorise the rows. */

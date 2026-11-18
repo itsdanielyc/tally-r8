@@ -3,6 +3,7 @@
 // and when several rules match, the oldest one wins.
 import type { Category, Result, Rule, TallyError, Transaction } from "../contracts/tally";
 import type { Ledger } from "./ledger";
+import { MAX_AMOUNT } from "./money";
 import { cleanText } from "./transactions";
 
 const CATEGORY_NAME_MAX = 60;
@@ -29,7 +30,7 @@ const noCategory = (id: unknown) => fail("not_found", `No category with id ${Str
 export function createCategory(ledger: Ledger, name: unknown): Result<Ledger> {
   const checked = checkName(ledger, name);
   if (!checked.ok) return checked;
-  const category: Category = { id: `c${ledger.nextId}`, name: checked.value };
+  const category: Category = { id: `c${ledger.nextId}`, name: checked.value, budget: null };
   return { ok: true, value: { ...ledger, categories: [...ledger.categories, category], nextId: ledger.nextId + 1 } };
 }
 
@@ -88,6 +89,14 @@ export function createRule(ledger: Ledger, contains: unknown, categoryId: unknow
 export function deleteRule(ledger: Ledger, id: unknown): Result<Ledger> {
   if (!ledger.rules.some((r) => r.id === id)) return fail("not_found", `No rule with id ${String(id)}.`);
   return { ok: true, value: { ...ledger, rules: ledger.rules.filter((r) => r.id !== id) } };
+}
+
+/** A monthly budget: a positive whole number of minor units, or null for none. */
+export function setBudget(ledger: Ledger, id: unknown, amount: unknown): Result<Ledger> {
+  if (!find(ledger, id)) return noCategory(id);
+  const valid = amount === null || (typeof amount === "number" && Number.isInteger(amount) && amount > 0 && amount <= MAX_AMOUNT);
+  if (!valid) return fail("invalid", "A budget must be more than zero, in whole minor units.", "budget");
+  return { ok: true, value: { ...ledger, categories: ledger.categories.map((c) => (c.id === id ? { ...c, budget: amount } : c)) } };
 }
 
 /** The category of the oldest rule whose text the payee contains, ignoring case. */

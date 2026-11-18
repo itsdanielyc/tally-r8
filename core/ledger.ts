@@ -4,7 +4,7 @@ import type { Category, LedgerStatus, Rule, Settings, Snapshot, Transaction } fr
 import { DEFAULT_CURRENCY } from "./money";
 
 /** The file version this build writes. Older versions are migrated on open. */
-export const LEDGER_VERSION = 2;
+export const LEDGER_VERSION = 3;
 
 export type Ledger = {
   version: number;

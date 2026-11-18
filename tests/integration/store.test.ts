@@ -31,7 +31,7 @@ describe("saving and reopening", () => {
     expect(existsSync(join(dir, LEDGER_FILE))).toBe(false);
     await service.addTransaction(tx("Corner shop"));
     const doc = JSON.parse(readFileSync(join(dir, LEDGER_FILE), "utf8"));
-    expect(doc.version).toBe(2);
+    expect(doc.version).toBe(3);
     expect(doc.transactions).toEqual([{ id: "t1", ...tx("Corner shop") }]);
   });
 
@@ -159,14 +159,14 @@ describe("file versions", () => {
     expect(snap.rules).toEqual([]);
   });
 
-  it("version 1 is written back as version 2 on the next change, keeping everything", async () => {
+  it("version 1 is written back as the current version on the next change, keeping everything", async () => {
     const dir = tempDir();
     copyFileSync(fixture("ledger-v1.json"), join(dir, LEDGER_FILE));
     await (await openBackend(dir)).createCategory("Groceries");
     const doc = JSON.parse(readFileSync(join(dir, LEDGER_FILE), "utf8"));
-    expect(doc.version).toBe(2);
+    expect(doc.version).toBe(3);
     expect(doc.transactions).toHaveLength(2);
-    expect(doc.categories).toEqual([{ id: "c3", name: "Groceries" }]);
+    expect(doc.categories).toEqual([{ id: "c3", name: "Groceries", budget: null }]);
     expect(doc.rules).toEqual([]);
   });
 
@@ -178,7 +178,7 @@ describe("file versions", () => {
     doc.nextId = 4;
     writeFileSync(join(dir, LEDGER_FILE), JSON.stringify(doc));
     const snap = await (await openBackend(dir)).load();
-    expect(snap.categories).toEqual([{ id: "c3", name: "Pay" }]);
+    expect(snap.categories).toEqual([{ id: "c3", name: "Pay", budget: null }]);
     expect(snap.transactions.find((t) => t.id === "t2")?.categoryId).toBe("c3");
   });
 
@@ -188,11 +188,20 @@ describe("file versions", () => {
     const service = await openBackend(dir);
     const snap = await service.load();
     expect(snap.status).toEqual({ kind: "ok" });
-    expect(snap.categories).toEqual([{ id: "c3", name: "Eating out" }, { id: "c2", name: "Groceries" }]);
+    expect(snap.categories).toEqual([{ id: "c3", name: "Eating out", budget: null }, { id: "c2", name: "Groceries", budget: null }]);
     expect(snap.rules).toEqual([{ id: "r5", contains: "shop", categoryId: "c2" }]);
     expect(snap.transactions.map((t) => [t.id, t.categoryId])).toEqual([["t4", null], ["t1", "c2"]]);
     const r = await service.createCategory("Travel");
     expect(r.ok && r.value.categories.find((c) => c.name === "Travel")?.id).toBe("c6");
+  });
+
+  it("version 3 as slice 4 wrote it keeps opening, budgets included", async () => {
+    const dir = tempDir();
+    copyFileSync(fixture("ledger-v3.json"), join(dir, LEDGER_FILE));
+    const snap = await (await openBackend(dir)).load();
+    expect(snap.status).toEqual({ kind: "ok" });
+    expect(snap.categories).toEqual([{ id: "c3", name: "Eating out", budget: null }, { id: "c2", name: "Groceries", budget: 40000 }]);
+    expect(snap.transactions).toHaveLength(2);
   });
 
   it("a byte order mark from a hand edit does not stop the file opening", async () => {

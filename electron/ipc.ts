@@ -12,6 +12,8 @@ const text = (value: unknown): string => (typeof value === "string" ? value : ""
 // The service checks every field of these objects; the casts only name them.
 const input = (value: unknown): TransactionInput => value as TransactionInput;
 const mapping = (value: unknown): ImportMapping => value as ImportMapping;
+// A budget is a number or null; anything else becomes NaN, which the service refuses.
+const budget = (value: unknown): number | null => (value === null ? null : typeof value === "number" ? value : Number.NaN);
 
 async function pickCsvFile(): Promise<Result<PickedFile | null>> {
   const path = await chooseCsvToOpen();
@@ -33,4 +35,5 @@ export function registerIpc(service: TallyService): void {
   ipcMain.handle(channels.createRule, (_e, contains: unknown, categoryId: unknown) => service.createRule(text(contains), text(categoryId)));
   ipcMain.handle(channels.deleteRule, (_e, id: unknown) => service.deleteRule(text(id)));
   ipcMain.handle(channels.applyRules, () => service.applyRules());
+  ipcMain.handle(channels.setBudget, (_e, id: unknown, amount: unknown) => service.setBudget(text(id), budget(amount)));
 }

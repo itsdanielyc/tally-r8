@@ -50,7 +50,7 @@ test("adds transactions through the main process, and the ledger file holds them
   await add(s.win, { date: "2026-11-02", amount: "12.50", payee: "Corner shop", note: "milk" });
   await add(s.win, { date: "2026-11-01", amount: "2500", payee: "Employer", income: true });
   const doc = JSON.parse(readFileSync(file, "utf8"));
-  expect(doc.version).toBe(2);
+  expect(doc.version).toBe(3);
   expect(doc.transactions.map((t: { payee: string; amount: number }) => [t.payee, t.amount])).toEqual([
     ["Corner shop", -1250],
     ["Employer", 250000],

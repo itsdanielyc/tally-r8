@@ -28,6 +28,7 @@ function native(bridge: ElectronBridge): Backend {
     createRule: (contains, categoryId) => bridge.createRule(contains, categoryId),
     deleteRule: (id) => bridge.deleteRule(id),
     applyRules: () => bridge.applyRules(),
+    setBudget: (categoryId, amount) => bridge.setBudget(categoryId, amount),
     pickCsvFile: () => bridge.pickCsvFile(),
   };
 }
