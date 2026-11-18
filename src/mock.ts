@@ -52,6 +52,7 @@ export function createMock(): Backend {
     createRule: (contains, categoryId) => service.createRule(contains, categoryId),
     deleteRule: (id) => service.deleteRule(id),
     applyRules: () => service.applyRules(),
+    setBudget: (categoryId, amount) => service.setBudget(categoryId, amount),
     pickCsvFile: () => pickInBrowser(),
   };
 }

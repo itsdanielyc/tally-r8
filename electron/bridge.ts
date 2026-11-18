@@ -20,5 +20,6 @@ export const channels = {
   createRule: "tally:create-rule",
   deleteRule: "tally:delete-rule",
   applyRules: "tally:apply-rules",
+  setBudget: "tally:set-budget",
   pickCsvFile: "tally:pick-csv-file",
 } as const satisfies Record<keyof ElectronBridge, string>;

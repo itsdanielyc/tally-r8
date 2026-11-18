@@ -59,6 +59,15 @@ const steps: Step[] = [
   { name: "delete a category", want: "ok", call: (api) => api.deleteCategory("c9") },
   { name: "create a category and a rule for an import", call: async (api) => [await api.createCategory("Pay"), await api.createRule("employer", "c13")] },
   { name: "import rows the rules categorise", want: "ok", call: (api) => api.importCsv("Date;Payee;Amount\r\n01.11.2026;Employer;3.200,00", MAPPING) },
+  { name: "set a monthly budget", want: "ok", call: (api) => api.setBudget("c13", 250000) },
+  { name: "refuse a budget that is not a positive whole number", want: "invalid", call: (api) => api.setBudget("c13", -5) },
+  { name: "refuse a budget for an unknown category", want: "not_found", call: (api) => api.setBudget("c99", 100) },
+  { name: "merging keeps the target's own budget", want: "ok", call: async (api) => {
+    await api.createCategory("Wages");
+    await api.setBudget("c16", 1000);
+    return api.mergeCategories("c16", "c13");
+  } },
+  { name: "remove a budget", want: "ok", call: (api) => api.setBudget("c13", null) },
   { name: "load again", call: (api) => api.load() },
 ];
 

@@ -26,7 +26,7 @@ function ledger(): Ledger {
 describe("categories", () => {
   it("creates with a clean name and keeps names unique ignoring case", () => {
     const l = ok(cat.createCategory(emptyLedger(), "  Day   trips "));
-    expect(l.categories).toEqual([{ id: "c1", name: "Day trips" }]);
+    expect(l.categories).toEqual([{ id: "c1", name: "Day trips", budget: null }]);
     expect(err(cat.createCategory(l, "day TRIPS"))).toBe("invalid/name");
     expect(err(cat.createCategory(l, "   "))).toBe("invalid/name");
     expect(err(cat.createCategory(l, "x".repeat(61)))).toBe("invalid/name");

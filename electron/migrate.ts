@@ -20,7 +20,7 @@ function isTransaction(v: unknown): v is Transaction {
 }
 
 function isCategory(v: unknown): v is Category {
-  return isObject(v) && typeof v.id === "string" && typeof v.name === "string";
+  return isObject(v) && typeof v.id === "string" && typeof v.name === "string" && (v.budget === null || isInt(v.budget));
 }
 
 function isRule(v: unknown): v is Rule {
@@ -31,6 +31,8 @@ function isRule(v: unknown): v is Rule {
 const STEPS: Record<number, (doc: Doc) => Doc> = {
   // 2 (slice 3) adds payee rules.
   1: (doc) => ({ ...doc, version: 2, rules: [] }),
+  // 3 (slice 4) adds a monthly budget to each category.
+  2: (doc) => ({ ...doc, version: 3, categories: Array.isArray(doc.categories) ? doc.categories.map((c: unknown) => (isObject(c) ? { ...c, budget: null } : c)) : doc.categories }),
 };
 
 function idNumber(id: string): number {

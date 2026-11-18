@@ -93,6 +93,10 @@ export class TallyService implements LedgerApi {
     return this.commit((ledger) => categories.deleteRule(ledger, id));
   }
 
+  setBudget(categoryId: string, amount: number | null): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.setBudget(ledger, categoryId, amount));
+  }
+
   async applyRules(): Promise<Result<RulesOutcome>> {
     let changed = 0;
     const result = await this.commit((ledger) => {
