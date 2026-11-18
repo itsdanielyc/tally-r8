@@ -11,7 +11,14 @@ import type { ImportMapping, LedgerApi } from "../../contracts/tally";
 import { openBackend } from "../../electron/backend";
 import { createMock } from "../../src/mock";
 
-type Step = { name: string; call: (api: LedgerApi) => Promise<unknown> };
+/** `want`: the outcome both must give, so a step cannot pass by both refusing it. */
+type Step = { name: string; want?: "ok" | "invalid" | "not_found"; call: (api: LedgerApi) => Promise<unknown> };
+
+function outcome(value: unknown): string {
+  if (typeof value !== "object" || value === null || !("ok" in value)) return "-";
+  const r = value as { ok: boolean; error?: { code: string } };
+  return r.ok ? "ok" : (r.error?.code ?? "?");
+}
 
 const tx = (date: string, payee: string, amount: number, note = "") => ({ date, payee, amount, categoryId: null, note });
 
@@ -26,20 +33,32 @@ const MAPPING: ImportMapping = { delimiter: ";", headerRow: 0, date: 0, payee: 1
 
 const steps: Step[] = [
   { name: "load an empty ledger", call: (api) => api.load() },
-  { name: "add a spending", call: (api) => api.addTransaction(tx("2026-11-02", "Corner shop", -1250, "milk")) },
-  { name: "add an income", call: (api) => api.addTransaction(tx("2026-11-01", "Employer", 250000)) },
-  { name: "add on the same date", call: (api) => api.addTransaction(tx("2026-11-02", "Bakery", -480)) },
-  { name: "edit a transaction", call: (api) => api.updateTransaction("t1", tx("2026-11-03", "Corner shop", -1350, "milk, eggs")) },
-  { name: "refuse an invalid add", call: (api) => api.addTransaction(tx("2026-11-31", "Nowhere", -1)) },
-  { name: "refuse an edit of an unknown id", call: (api) => api.updateTransaction("t99", tx("2026-11-03", "x", -1)) },
-  { name: "delete a transaction", call: (api) => api.deleteTransaction("t3") },
-  { name: "refuse deleting it twice", call: (api) => api.deleteTransaction("t3") },
-  { name: "change to a currency with the same digits", call: (api) => api.setCurrency("EUR") },
-  { name: "refuse a currency with other digits", call: (api) => api.setCurrency("JPY") },
-  { name: "import a bank CSV", call: (api) => api.importCsv(CSV, MAPPING) },
-  { name: "import the same file again: nothing added", call: (api) => api.importCsv(CSV, MAPPING) },
-  { name: "refuse an import with a broken mapping", call: (api) => api.importCsv(CSV, { ...MAPPING, delimiter: "x" as ";" }) },
-  { name: "import debit and credit columns", call: (api) => api.importCsv("d,p,out,in\n2026-10-09,Shop,5.00,\n2026-10-09,Refund,,5.00", { ...MAPPING, delimiter: ",", amount: { kind: "split", debit: 2, credit: 3 }, decimal: "." }) },
+  { name: "add a spending", want: "ok", call: (api) => api.addTransaction(tx("2026-11-02", "Corner shop", -1250, "milk")) },
+  { name: "add an income", want: "ok", call: (api) => api.addTransaction(tx("2026-11-01", "Employer", 250000)) },
+  { name: "add on the same date", want: "ok", call: (api) => api.addTransaction(tx("2026-11-02", "Bakery", -480)) },
+  { name: "edit a transaction", want: "ok", call: (api) => api.updateTransaction("t1", tx("2026-11-03", "Corner shop", -1350, "milk, eggs")) },
+  { name: "refuse an invalid add", want: "invalid", call: (api) => api.addTransaction(tx("2026-11-31", "Nowhere", -1)) },
+  { name: "refuse an edit of an unknown id", want: "not_found", call: (api) => api.updateTransaction("t99", tx("2026-11-03", "x", -1)) },
+  { name: "delete a transaction", want: "ok", call: (api) => api.deleteTransaction("t3") },
+  { name: "refuse deleting it twice", want: "not_found", call: (api) => api.deleteTransaction("t3") },
+  { name: "change to a currency with the same digits", want: "ok", call: (api) => api.setCurrency("EUR") },
+  { name: "refuse a currency with other digits", want: "invalid", call: (api) => api.setCurrency("JPY") },
+  { name: "import a bank CSV", want: "ok", call: (api) => api.importCsv(CSV, MAPPING) },
+  { name: "import the same file again: nothing added", want: "ok", call: (api) => api.importCsv(CSV, MAPPING) },
+  { name: "refuse an import with a broken mapping", want: "invalid", call: (api) => api.importCsv(CSV, { ...MAPPING, delimiter: "x" as ";" }) },
+  { name: "import debit and credit columns", want: "ok", call: (api) => api.importCsv("d,p,out,in\n2026-10-09,Shop,5.00,\n2026-10-09,Refund,,5.00", { ...MAPPING, delimiter: ",", amount: { kind: "split", debit: 2, credit: 3 }, decimal: "." }) },
+  { name: "create a category", want: "ok", call: (api) => api.createCategory("Groceries") },
+  { name: "create another", want: "ok", call: (api) => api.createCategory("Eating out") },
+  { name: "refuse a name already taken", want: "invalid", call: (api) => api.createCategory("groceries") },
+  { name: "rename a category", want: "ok", call: (api) => api.renameCategory("c9", "Food") },
+  { name: "create a rule", want: "ok", call: (api) => api.createRule("corner", "c9") },
+  { name: "apply the rules to uncategorised transactions", want: "ok", call: (api) => api.applyRules() },
+  { name: "create a second rule", want: "ok", call: (api) => api.createRule("shop", "c10") },
+  { name: "merge one category into the other", want: "ok", call: (api) => api.mergeCategories("c10", "c9") },
+  { name: "delete a rule", want: "ok", call: (api) => api.deleteRule("r11") },
+  { name: "delete a category", want: "ok", call: (api) => api.deleteCategory("c9") },
+  { name: "create a category and a rule for an import", call: async (api) => [await api.createCategory("Pay"), await api.createRule("employer", "c13")] },
+  { name: "import rows the rules categorise", want: "ok", call: (api) => api.importCsv("Date;Payee;Amount\r\n01.11.2026;Employer;3.200,00", MAPPING) },
   { name: "load again", call: (api) => api.load() },
 ];
 
@@ -59,6 +78,7 @@ describe("contract: mock and real backend", () => {
       const fromMock = comparable(await step.call(mock));
       const fromReal = comparable(await step.call(real));
       expect(fromReal, step.name).toEqual(fromMock);
+      if (step.want) expect(outcome(fromReal), step.name).toBe(step.want);
       // Reopen from disk: what the file holds must be what the mock holds.
       real = await openBackend(dir);
       expect(comparable(await real.load()), `${step.name}, after reopening`).toEqual(comparable(await mock.load()));

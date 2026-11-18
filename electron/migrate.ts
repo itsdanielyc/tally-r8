@@ -2,7 +2,7 @@
 // to the current version. Every version that was ever written stays readable:
 // each step turns version n into n + 1, and each has an L3 test with a
 // fixture file of version n. A file from a newer Tally is never guessed at.
-import type { Category, Transaction } from "../contracts/tally";
+import type { Category, Rule, Transaction } from "../contracts/tally";
 import { LEDGER_VERSION, type Ledger } from "../core/ledger";
 
 export type Migrated =
@@ -23,8 +23,15 @@ function isCategory(v: unknown): v is Category {
   return isObject(v) && typeof v.id === "string" && typeof v.name === "string";
 }
 
-// Version n -> n + 1. Empty while 1 is the only version.
-const STEPS: Record<number, (doc: Doc) => Doc> = {};
+function isRule(v: unknown): v is Rule {
+  return isObject(v) && typeof v.id === "string" && typeof v.contains === "string" && typeof v.categoryId === "string";
+}
+
+// Version n -> n + 1.
+const STEPS: Record<number, (doc: Doc) => Doc> = {
+  // 2 (slice 3) adds payee rules.
+  1: (doc) => ({ ...doc, version: 2, rules: [] }),
+};
 
 function idNumber(id: string): number {
   return Number(id.slice(1)) || 0;
@@ -32,19 +39,21 @@ function idNumber(id: string): number {
 
 /** The current version's shape, checked field by field. */
 function toLedger(doc: Doc): Ledger | null {
-  const { settings, transactions, categories, nextId } = doc;
+  const { settings, transactions, categories, rules, nextId } = doc;
   if (!isObject(settings) || typeof settings.currency !== "string") return null;
   if (!Array.isArray(transactions) || !transactions.every(isTransaction)) return null;
   if (!Array.isArray(categories) || !categories.every(isCategory)) return null;
+  if (!Array.isArray(rules) || !rules.every(isRule)) return null;
   if (!isInt(nextId) || nextId < 1) return null;
   // Never hand out an id that is already taken, whatever nextId says.
   let highest = 0;
-  for (const item of [...transactions, ...categories]) highest = Math.max(highest, idNumber(item.id));
+  for (const item of [...transactions, ...categories, ...rules]) highest = Math.max(highest, idNumber(item.id));
   return {
     version: LEDGER_VERSION,
     settings: { currency: settings.currency },
     transactions,
     categories,
+    rules,
     nextId: Math.max(nextId, highest + 1),
   };
 }

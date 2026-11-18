@@ -21,6 +21,13 @@ function native(bridge: ElectronBridge): Backend {
     deleteTransaction: (id) => bridge.deleteTransaction(id),
     setCurrency: (code) => bridge.setCurrency(code),
     importCsv: (text, mapping) => bridge.importCsv(text, mapping),
+    createCategory: (name) => bridge.createCategory(name),
+    renameCategory: (id, name) => bridge.renameCategory(id, name),
+    deleteCategory: (id) => bridge.deleteCategory(id),
+    mergeCategories: (fromId, intoId) => bridge.mergeCategories(fromId, intoId),
+    createRule: (contains, categoryId) => bridge.createRule(contains, categoryId),
+    deleteRule: (id) => bridge.deleteRule(id),
+    applyRules: () => bridge.applyRules(),
     pickCsvFile: () => bridge.pickCsvFile(),
   };
 }

@@ -45,6 +45,13 @@ export function createMock(): Backend {
     deleteTransaction: (id) => service.deleteTransaction(id),
     setCurrency: (code) => service.setCurrency(code),
     importCsv: (text, mapping) => service.importCsv(text, mapping),
+    createCategory: (name) => service.createCategory(name),
+    renameCategory: (id, name) => service.renameCategory(id, name),
+    deleteCategory: (id) => service.deleteCategory(id),
+    mergeCategories: (fromId, intoId) => service.mergeCategories(fromId, intoId),
+    createRule: (contains, categoryId) => service.createRule(contains, categoryId),
+    deleteRule: (id) => service.deleteRule(id),
+    applyRules: () => service.applyRules(),
     pickCsvFile: () => pickInBrowser(),
   };
 }

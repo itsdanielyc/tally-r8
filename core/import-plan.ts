@@ -4,6 +4,7 @@
 // planImport, so what the person sees is what gets imported.
 import type { ImportMapping, Result, TransactionInput } from "../contracts/tally";
 import { DELIMITERS, parseCsv, type CsvRecord } from "./csv-parse";
+import { matchRule } from "./categories";
 import { parseBankDate } from "./dates";
 import type { Ledger } from "./ledger";
 import { currencyDigits, parseAmount } from "./money";
@@ -15,7 +16,7 @@ type ImportRow = TransactionInput & { line: number };
 type Rejected = { line: number; reason: string };
 export type ImportPlan = { rows: ImportRow[]; duplicates: number; rejected: Rejected[] };
 
-type LedgerView = Pick<Ledger, "transactions" | "settings" | "categories">;
+type LedgerView = Pick<Ledger, "transactions" | "settings" | "categories" | "rules">;
 
 function invalid(message: string): { ok: false; error: { code: "invalid"; message: string; field: "mapping" } } {
   return { ok: false, error: { code: "invalid", message, field: "mapping" } };
@@ -75,7 +76,7 @@ function readRow(r: CsvRecord, m: ImportMapping, ledger: LedgerView, needed: num
   if (payee === "") return { line: r.line, reason: "payee is empty" };
   const amount = readAmount(r.cells, m, currencyDigits(ledger.settings.currency));
   if ("reason" in amount) return { line: r.line, reason: amount.reason };
-  const input: TransactionInput = { date, payee, amount: amount.value, categoryId: null, note: "" };
+  const input: TransactionInput = { date, payee, amount: amount.value, categoryId: matchRule(ledger.rules, payee), note: "" };
   const checked = validateInput(input, ledger);
   if (!checked.ok) return { line: r.line, reason: checked.error.message };
   return { ...checked.value, line: r.line };

@@ -10,6 +10,13 @@ const bridge: ElectronBridge = {
   deleteTransaction: (id) => ipcRenderer.invoke(channels.deleteTransaction, id),
   setCurrency: (code) => ipcRenderer.invoke(channels.setCurrency, code),
   importCsv: (text, mapping) => ipcRenderer.invoke(channels.importCsv, text, mapping),
+  createCategory: (name) => ipcRenderer.invoke(channels.createCategory, name),
+  renameCategory: (id, name) => ipcRenderer.invoke(channels.renameCategory, id, name),
+  deleteCategory: (id) => ipcRenderer.invoke(channels.deleteCategory, id),
+  mergeCategories: (fromId, intoId) => ipcRenderer.invoke(channels.mergeCategories, fromId, intoId),
+  createRule: (contains, categoryId) => ipcRenderer.invoke(channels.createRule, contains, categoryId),
+  deleteRule: (id) => ipcRenderer.invoke(channels.deleteRule, id),
+  applyRules: () => ipcRenderer.invoke(channels.applyRules),
   pickCsvFile: () => ipcRenderer.invoke(channels.pickCsvFile),
 };
 
