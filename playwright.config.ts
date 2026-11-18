@@ -3,6 +3,11 @@
 // is the one engine; CI runs it on all three OS runners.
 import { defineConfig, devices } from "@playwright/test";
 
+// The suite always starts its own Vite server and never reuses one that is
+// already listening: another app on the same port would be tested instead.
+// TALLY_UI_PORT moves it off 1420 when something else holds that port.
+const port = Number(process.env.TALLY_UI_PORT ?? 1420);
+
 export default defineConfig({
   testDir: "tests/ui",
   fullyParallel: true,
@@ -22,7 +27,7 @@ export default defineConfig({
     },
   },
   use: {
-    baseURL: "http://localhost:1420",
+    baseURL: `http://localhost:${port}`,
     viewport: { width: 1024, height: 700 },
     deviceScaleFactor: 1,
     trace: "retain-on-failure",
@@ -32,9 +37,9 @@ export default defineConfig({
     { name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 700 } } },
   ],
   webServer: {
-    command: "npm run dev:web -- --strictPort --port 1420",
-    url: "http://localhost:1420",
-    reuseExistingServer: !process.env.CI,
+    command: `npm run dev:web -- --strictPort --port ${port}`,
+    url: `http://localhost:${port}`,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

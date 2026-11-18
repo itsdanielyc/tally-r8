@@ -4,6 +4,8 @@
 import type { ElectronBridge } from "../electron/bridge";
 import { type Backend, createMock } from "./mock";
 
+export type { Backend };
+
 declare global {
   interface Window {
     tallyBridge?: ElectronBridge;
@@ -18,8 +20,6 @@ function native(bridge: ElectronBridge): Backend {
     updateTransaction: (id, input) => bridge.updateTransaction(id, input),
     deleteTransaction: (id) => bridge.deleteTransaction(id),
     setCurrency: (code) => bridge.setCurrency(code),
-    greet: (name) => bridge.greet(name),
-    platformInfo: () => bridge.platformInfo(),
   };
 }
 

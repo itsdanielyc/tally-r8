@@ -1,7 +1,7 @@
 // L1: money as whole minor units, and calendar dates.
 import { describe, expect, it } from "vitest";
 import { isValidIsoDate, localIsoDate } from "../../core/dates";
-import { currencyDigits, formatAmount, MAX_AMOUNT, parseAmount, plainAmount } from "../../core/money";
+import { currencyDigits, formatAmount, MAX_AMOUNT, parseAmount, parseTypedAmount, plainAmount } from "../../core/money";
 
 const value = (text: string, digits = 2, decimal: "." | "," = ".") => {
   const r = parseAmount(text, digits, decimal);
@@ -50,6 +50,30 @@ describe("parseAmount", () => {
     expect(value("--1")).toContain("is not a number");
     expect(value("99999999999999999")).toContain("too large");
     expect(value(String(MAX_AMOUNT / 100 + 1))).toContain("too large");
+  });
+});
+
+describe("parseTypedAmount (the entry form)", () => {
+  const typed = (text: string, digits = 2) => {
+    const r = parseTypedAmount(text, digits);
+    return r.ok ? r.value : r.reason;
+  };
+
+  it("takes a decimal point or a decimal comma", () => {
+    expect(typed("12.50")).toBe(1250);
+    expect(typed("12,50")).toBe(1250);
+    expect(typed("1,250")).toBe(125000);
+    expect(typed("1.250,75")).toBe(125075);
+    expect(typed("1500", 0)).toBe(1500);
+  });
+
+  it("refuses a sign, zero and junk with a sentence the form can show", () => {
+    expect(typed("-5")).toBe("Type the amount without a sign; choose Spending or Income.");
+    expect(typed("+5")).toBe("Type the amount without a sign; choose Spending or Income.");
+    expect(typed("0.00")).toBe("Amount cannot be zero.");
+    expect(typed("")).toBe("Amount is empty.");
+    expect(typed("12.345")).toBe(`Amount "12.345" has more than 2 decimal places.`);
+    expect(typed("twelve")).toBe(`Amount "twelve" is not a number.`);
   });
 });
 

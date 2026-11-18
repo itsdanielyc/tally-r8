@@ -6,8 +6,8 @@ import { isValidIsoDate } from "./dates";
 import type { Ledger } from "./ledger";
 import { currencyDigits, formatAmount, MAX_AMOUNT } from "./money";
 
-const PAYEE_MAX = 200;
-const NOTE_MAX = 1000;
+export const PAYEE_MAX = 200;
+export const NOTE_MAX = 1000;
 
 function invalid(field: string, message: string): { ok: false; error: TallyError } {
   return { ok: false, error: { code: "invalid", field, message } };
