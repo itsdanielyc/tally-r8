@@ -163,6 +163,14 @@ test("dates and amounts are shown whole, never cut off", async ({ page }) => {
   expect(cut).toEqual([]);
 });
 
+// Visual QA (release commit): the Search field was squeezed to about 60 px,
+// too narrow to show its own placeholder.
+test("the search field has room to show what it is for", async ({ page }) => {
+  await sample(page);
+  const width = await page.getByLabel("Search").evaluate((el) => el.getBoundingClientRect().width);
+  expect(width).toBeGreaterThanOrEqual(120);
+});
+
 test("tier 1: accessibility structure is identical everywhere", async ({ page }) => {
   await sample(page);
   await expect(page.locator("body")).toMatchAriaSnapshot({ name: "transactions.aria.yml" });

@@ -80,6 +80,15 @@ test("skips a preamble, finds the header and reads debit and credit columns with
   ]);
 });
 
+// Visual QA (release commit): with the Linux system font the "Debit and
+// credit columns" choice was cut off. No label or choice may be cut.
+test("no label or choice in the mapping is cut off", async ({ page }) => {
+  await pick(page, "bank-semicolon.csv");
+  const cut = await page.locator(".mapping .segmented, .mapping .segmented label, .mapping .field-label").evaluateAll((els) =>
+    els.filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent));
+  expect(cut).toEqual([]);
+});
+
 test("every mapping change redraws the preview", async ({ page }) => {
   await pick(page, "bank-semicolon.csv");
   await page.getByLabel("Date order").selectOption("MDY");
