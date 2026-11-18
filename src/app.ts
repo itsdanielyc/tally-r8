@@ -3,13 +3,15 @@
 // sends one call, and the Snapshot that comes back is drawn whole.
 import type { Result, Snapshot, TallyError } from "../contracts/tally";
 import type { Backend } from "./api";
+import { localIsoDate } from "../core/dates";
 import { h, replace } from "./dom";
 import { categoriesView } from "./views/categories";
 import { type ImportState, importView } from "./views/import";
 import { settingsView } from "./views/settings";
+import { summaryView } from "./views/summary";
 import { transactionsView } from "./views/transactions";
 
-type ViewName = "transactions" | "import" | "categories" | "settings";
+type ViewName = "transactions" | "import" | "categories" | "summary" | "settings";
 
 /** Screen state that is not ledger data and does not survive a restart. */
 type UiState = {
@@ -17,6 +19,9 @@ type UiState = {
   editingId: string | null;
   confirmDeleteId: string | null;
   renamingId: string | null;
+  /** The month the Summary shows, "YYYY-MM"; and the category whose budget is being edited. */
+  month: string;
+  budgetEditId: string | null;
   importing: ImportState;
   /** A one-line result to show on the current screen, such as how many rules applied. */
   flash: string | null;
@@ -38,12 +43,13 @@ const VIEWS: { name: ViewName; label: string; draw: (ctx: Ctx) => HTMLElement }[
   { name: "transactions", label: "Transactions", draw: transactionsView },
   { name: "import", label: "Import", draw: importView },
   { name: "categories", label: "Categories", draw: categoriesView },
+  { name: "summary", label: "Summary", draw: summaryView },
   { name: "settings", label: "Settings", draw: settingsView },
 ];
 
 export async function startApp(root: HTMLElement, backend: Backend): Promise<void> {
   let snapshot = await backend.load();
-  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, renamingId: null, importing: { file: null, result: null }, flash: null, focus: null };
+  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, renamingId: null, month: localIsoDate(new Date()).slice(0, 7), budgetEditId: null, importing: { file: null, result: null }, flash: null, focus: null };
   const nav = h("nav", { class: "sidebar", "aria-label": "Sections", "data-geo": "sidebar" });
   const main = h("main", { class: "main", "data-geo": "main" });
   const status = h("footer", { class: "statusbar", "data-geo": "statusbar" });
@@ -69,7 +75,7 @@ export async function startApp(root: HTMLElement, backend: Backend): Promise<voi
         class: "nav-item",
         "aria-current": ui.view === v.name ? "page" : false,
         onclick: () => {
-          Object.assign(ui, { view: v.name, editingId: null, confirmDeleteId: null, renamingId: null, flash: null });
+          Object.assign(ui, { view: v.name, editingId: null, confirmDeleteId: null, renamingId: null, budgetEditId: null, flash: null });
           render();
         },
       }, v.label)),
