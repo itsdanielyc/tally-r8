@@ -8,6 +8,8 @@
     - listitem:
       - button "Categories"
     - listitem:
+      - button "Summary"
+    - listitem:
       - button "Settings"
 - main:
   - region "Transactions":

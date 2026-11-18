@@ -245,3 +245,37 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .rules-section h2 { font-size: var(--text-md); margin: var(--space-5) 0 var(--space-1); }
 .rules-section > .hint { margin: 0 0 var(--space-3); }
 .apply-rules { padding-bottom: var(--space-5); }
+
+/* Summary */
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); height: var(--control); }
+.month-nav h2 { margin: 0; font-size: var(--text-lg); font-weight: 600; }
+.totals { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); align-items: center; }
+.stats { display: flex; gap: var(--space-5); }
+.stat { display: grid; gap: 2px; }
+.stat-label { font-size: var(--text-sm); color: var(--text-2); }
+.stat strong { font-size: var(--text-lg); line-height: 24px; font-variant-numeric: tabular-nums; }
+.stat.income strong { color: var(--income); }
+.bars { display: grid; gap: var(--space-2); }
+.bar-row { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-2); }
+.bar-track { height: 10px; background: var(--sunken); border-radius: 5px; overflow: hidden; }
+.bar { height: 100%; border-radius: 5px; }
+.bar.income { background: var(--income); }
+.bar.spending { background: var(--text-2); }
+.ledger.lines, .ledger.month-list { margin-bottom: var(--space-4); }
+.ledger.lines th.budget, .ledger.lines td.budget { width: 220px; }
+.ledger.lines th.left, .ledger.lines td.left { width: 200px; }
+.ledger.lines td.budget, .ledger.lines td.left { font-variant-numeric: tabular-nums; }
+.ledger.lines td.budget .budget-text { display: inline-block; min-width: 96px; text-align: right; margin-right: var(--space-2); }
+.ledger.lines td.none, .ledger.lines td.name.none { color: var(--text-3); }
+.ledger.lines td.left { white-space: nowrap; }
+.left-text { display: inline-block; min-width: 104px; }
+.ledger.lines td.over { color: var(--danger); }
+.meter { display: inline-block; vertical-align: middle; width: 64px; height: 6px; background: var(--sunken); border-radius: 3px; overflow: hidden; margin-left: var(--space-2); }
+.meter-fill { display: block; height: 100%; background: var(--accent); }
+.meter-fill.over { background: var(--danger); }
+.ledger td.editing { overflow: visible; }
+.budget-form { display: flex; gap: var(--space-2); align-items: center; }
+.budget-form input { height: 28px; width: 120px; }
+.budget-form button { height: 28px; padding: 0 var(--space-2); }
+.ledger tfoot th, .ledger tfoot td { border-top: 1px solid var(--border-strong); border-bottom: 0; font-weight: 600; text-align: left; }
+.ledger tfoot td.amount { text-align: right; }

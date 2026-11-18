@@ -4,7 +4,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Snapshot } from "../../contracts/tally";
+import type { Snapshot, Transaction } from "../../contracts/tally";
+import { formatAmount } from "../../core/money";
 import { launch, removeDir, tempDataDir, type Launched } from "./launch";
 
 type Entry = { date: string; amount: string; payee: string; note?: string; income?: boolean };
@@ -103,6 +104,19 @@ test("after a hard kill right after a change, the ledger opens with that change"
   s = await launch(dir);
   await expect(s.win.locator(".banner")).toHaveCount(0);
   expect((await shown(s.win)).map((r) => r[1])).toEqual(["Saved before the kill", "Corner deli"]);
+});
+
+test("the summary of the current month adds up what was recorded in it", async () => {
+  // The app opens the summary on today's month, by the same local clock as this test.
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  await add(s.win, { date: today, amount: "7.25", payee: "Recorded today" });
+  const doc = JSON.parse(readFileSync(file, "utf8")) as { transactions: Transaction[] };
+  const net = doc.transactions.filter((t) => t.date.startsWith(today.slice(0, 7))).reduce((sum, t) => sum + t.amount, 0);
+  await s.win.getByRole("navigation").getByRole("button", { name: "Summary", exact: true }).click();
+  await expect(s.win.getByTestId("month-total")).toHaveText((net > 0 ? "+" : "") + formatAmount(net, 2));
+  await expect(s.win.getByRole("table", { name: "Transactions this month" })).toContainText("Recorded today");
+  await s.win.getByRole("navigation").getByRole("button", { name: "Transactions", exact: true }).click();
 });
 
 test("saves a screenshot named after the platform", async () => {

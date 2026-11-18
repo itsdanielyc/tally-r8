@@ -1,0 +1,77 @@
+- main:
+  - region "Summary":
+    - heading "Summary" [level=1]
+    - button "‹ Previous month"
+    - heading /November \d+/ [level=2]
+    - button "Next month ›"
+    - region "Income against spending":
+      - text: ""
+      - strong: /\+\d+,\d+\.\d+/
+      - text: Spending
+      - strong: /-\d+\.\d+/
+      - text: Net
+      - strong: /\+\d+,\d+\.\d+/
+    - table "Categories this month":
+      - rowgroup:
+        - row "Category Total Monthly budget Left":
+          - columnheader "Category"
+          - columnheader "Total"
+          - columnheader "Monthly budget"
+          - columnheader "Left"
+      - rowgroup:
+        - row /Eating out -\d+\.\d+ \d+\.\d+ Change budget for Eating out \d+\.\d+ over/:
+          - cell "Eating out"
+          - cell /-\d+\.\d+/
+          - cell /\d+\.\d+ Change budget for Eating out/:
+            - text: ""
+            - button "Change budget for Eating out"
+          - cell /\d+\.\d+ over/
+        - row /Groceries -\d+\.\d+ \d+\.\d+ Change budget for Groceries \d+\.\d+ left/:
+          - cell "Groceries"
+          - cell /-\d+\.\d+/
+          - cell /\d+\.\d+ Change budget for Groceries/:
+            - text: ""
+            - button "Change budget for Groceries"
+          - cell /\d+\.\d+ left/
+        - row /Uncategorised \+\d+,\d+\.\d+ — —/:
+          - cell "Uncategorised"
+          - cell /\+\d+,\d+\.\d+/
+          - cell "—"
+          - cell "—"
+    - table "Transactions this month":
+      - rowgroup:
+        - row "Date Payee Category Amount (USD)":
+          - columnheader "Date"
+          - columnheader "Payee"
+          - columnheader "Category"
+          - columnheader "Amount (USD)"
+      - rowgroup:
+        - row /\d+-\d+-\d+ Pizza Roma Eating out -\d+\.\d+/:
+          - cell /\d+-\d+-\d+/
+          - cell "Pizza Roma"
+          - cell "Eating out"
+          - cell /-\d+\.\d+/
+        - row /\d+-\d+-\d+ Kiosk Uncategorised -\d+\.\d+/:
+          - cell /\d+-\d+-\d+/
+          - cell "Kiosk"
+          - cell "Uncategorised"
+          - cell /-\d+\.\d+/
+        - row /\d+-\d+-\d+ Employer Uncategorised \+\d+,\d+\.\d+/:
+          - cell /\d+-\d+-\d+/
+          - cell "Employer"
+          - cell "Uncategorised"
+          - cell /\+\d+,\d+\.\d+/
+        - row /\d+-\d+-\d+ Market Hall refund Groceries \+\d+\.\d+/:
+          - cell /\d+-\d+-\d+/
+          - cell "Market Hall refund"
+          - cell "Groceries"
+          - cell /\+\d+\.\d+/
+        - row /\d+-\d+-\d+ Market Hall Groceries -\d+\.\d+/:
+          - cell /\d+-\d+-\d+/
+          - cell "Market Hall"
+          - cell "Groceries"
+          - cell /-\d+\.\d+/
+      - rowgroup:
+        - row /Net for November \d+ \+\d+,\d+\.\d+/:
+          - rowheader /Net for November \d+/
+          - cell /\+\d+,\d+\.\d+/
