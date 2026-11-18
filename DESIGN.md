@@ -36,6 +36,13 @@ trust in the numbers matter more than character.
   under where it was typed.
 - The amount is typed unsigned with a Spending or Income choice; the list
   shows it signed.
+- Undo is a bar above the current screen, on every screen, naming what it
+  would take back; it goes away after use or after any other change. The
+  inline delete confirmation stays, because undo lives in memory only.
+- The filter bar sits between the entry form and the list; typing redraws
+  only the list so the field keeps its focus. Its labels (Search, In, From,
+  To, At least, At most) avoid the entry form's words so each label names
+  one control.
 - Text sizes of layout containers are fixed by CSS (control heights, row
   heights, sidebar width) so the shared geometry baseline holds across the
   three system fonts.

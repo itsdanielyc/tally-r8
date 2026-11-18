@@ -41,8 +41,9 @@ Read cold, mid-task. Every command below is real for this repository.
   `TALLY_DATA_DIR` per suite; journeys live under `tests/e2e/`
   (`record.spec.ts`: add, restart, edit, delete, hard kill, unreadable file;
   `import.spec.ts`: CSV import, re-import, 2,000 rows).
-- The open dialog cannot be driven; `TALLY_OPEN_PATH` (an absolute path) is
-  the file it returns. Bank CSV fixtures live in `tests/fixtures/csv/`.
+- The open and save dialogs cannot be driven; `TALLY_OPEN_PATH` and
+  `TALLY_SAVE_PATH` (absolute paths) are the files they return
+  (`export.spec.ts`: export, re-import into a fresh ledger, undo). Bank CSV fixtures live in `tests/fixtures/csv/`.
 - To kill the app hard, kill the main process's own pid
   (`app.evaluate(() => process.pid)`); on Windows the ChildProcess
   Playwright returns is a launcher wrapper.
