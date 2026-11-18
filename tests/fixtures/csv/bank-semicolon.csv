@@ -1,0 +1,10 @@
+Account;DE00 1234 5678
+Statement;October 2026
+
+Booking date;Payee;Debit;Credit;Note
+01.10.2026;Employer GmbH;;3.200,00;Salary
+02.10.2026;"Bakery; Miller";4,80;;
+03.10.2026;City power;64,20;;Electricity
+04.10.2026;Refund shop;;12,00;
+05.10.2026;Both columns;1,00;2,00;
+06.10.2026;Neither;;;

@@ -7,13 +7,22 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import type { Result, Snapshot, TallyApi } from "../../contracts/tally";
+import type { ImportMapping, LedgerApi } from "../../contracts/tally";
 import { openBackend } from "../../electron/backend";
 import { createMock } from "../../src/mock";
 
-type Step = { name: string; call: (api: TallyApi) => Promise<Result<Snapshot> | Snapshot> };
+type Step = { name: string; call: (api: LedgerApi) => Promise<unknown> };
 
 const tx = (date: string, payee: string, amount: number, note = "") => ({ date, payee, amount, categoryId: null, note });
+
+const CSV = [
+  "Date;Payee;Amount",
+  "01.10.2026;Employer;3.200,00",
+  "02.10.2026;\"Corner; shop\";-12,50",
+  "02.10.2026;\"Corner; shop\";-12,50",
+  "03.10.2026;Bakery;oops",
+].join("\r\n");
+const MAPPING: ImportMapping = { delimiter: ";", headerRow: 0, date: 0, payee: 1, amount: { kind: "signed", column: 2 }, dateOrder: "DMY", decimal: "," };
 
 const steps: Step[] = [
   { name: "load an empty ledger", call: (api) => api.load() },
@@ -27,13 +36,16 @@ const steps: Step[] = [
   { name: "refuse deleting it twice", call: (api) => api.deleteTransaction("t3") },
   { name: "change to a currency with the same digits", call: (api) => api.setCurrency("EUR") },
   { name: "refuse a currency with other digits", call: (api) => api.setCurrency("JPY") },
+  { name: "import a bank CSV", call: (api) => api.importCsv(CSV, MAPPING) },
+  { name: "import the same file again: nothing added", call: (api) => api.importCsv(CSV, MAPPING) },
+  { name: "refuse an import with a broken mapping", call: (api) => api.importCsv(CSV, { ...MAPPING, delimiter: "x" as ";" }) },
+  { name: "import debit and credit columns", call: (api) => api.importCsv("d,p,out,in\n2026-10-09,Shop,5.00,\n2026-10-09,Refund,,5.00", { ...MAPPING, delimiter: ",", amount: { kind: "split", debit: 2, credit: 3 }, decimal: "." }) },
   { name: "load again", call: (api) => api.load() },
 ];
 
 /** The file path is the one thing that is meant to differ. */
-function comparable(r: Result<Snapshot> | Snapshot): unknown {
-  if ("ok" in r) return r.ok ? { ok: true, value: { ...r.value, file: "-" } } : r;
-  return { ...r, file: "-" };
+function comparable(value: unknown): unknown {
+  return JSON.parse(JSON.stringify(value), (key, v: unknown) => (key === "file" ? "-" : v));
 }
 
 describe("contract: mock and real backend", () => {

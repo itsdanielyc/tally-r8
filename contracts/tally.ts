@@ -58,10 +58,45 @@ export type TallyError = {
 /** Errors are values, never exceptions, so they cross IPC unchanged. */
 export type Result<T> = { ok: true; value: T } | { ok: false; error: TallyError };
 
-export interface TallyApi {
+export type Delimiter = "," | ";" | "\t" | "|";
+export type DateOrder = "YMD" | "DMY" | "MDY";
+
+/** How the columns of a bank CSV become transactions. Columns count from 0. */
+export type ImportMapping = {
+  delimiter: Delimiter;
+  /** Index of the header record among the parsed records, or null for none. */
+  headerRow: number | null;
+  date: number;
+  payee: number;
+  amount: { kind: "signed"; column: number } | { kind: "split"; debit: number; credit: number };
+  dateOrder: DateOrder;
+  decimal: "." | ",";
+};
+
+/** A CSV file the person picked, already decoded to text. */
+export type PickedFile = { name: string; text: string };
+
+export type ImportOutcome = {
+  snapshot: Snapshot;
+  added: number;
+  /** Rows identical (date, amount, payee) to a transaction already there. */
+  duplicates: number;
+  rejected: number;
+};
+
+/** Everything the ledger service answers, in the main process and in the mock. */
+export interface LedgerApi {
   load(): Promise<Snapshot>;
   addTransaction(input: TransactionInput): Promise<Result<Snapshot>>;
   updateTransaction(id: string, input: TransactionInput): Promise<Result<Snapshot>>;
   deleteTransaction(id: string): Promise<Result<Snapshot>>;
   setCurrency(code: string): Promise<Result<Snapshot>>;
+  /** Imports every accepted row together, or none. */
+  importCsv(text: string, mapping: ImportMapping): Promise<Result<ImportOutcome>>;
+}
+
+/** The ledger plus what only the platform can do: file dialogs. */
+export interface TallyApi extends LedgerApi {
+  /** Asks for a CSV file; ok with null when the person cancels. */
+  pickCsvFile(): Promise<Result<PickedFile | null>>;
 }

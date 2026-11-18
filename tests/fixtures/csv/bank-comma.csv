@@ -1,0 +1,9 @@
+Date,Description,Amount,Balance
+2026-10-01,"Employer, Inc. payroll",3200.00,4200.00
+2026-10-02,Corner shop,-12.50,4187.50
+2026-10-03,"Rent ""October""",-1100.00,3087.50
+2026-10-03,Corner shop,-12.50,3075.00
+2026-10-03,Corner shop,-12.50,3062.50
+2026-10-05,Bakery,-4.80,3057.70
+not a date,Broken row,-1.00,0
+2026-10-06,Cinema,abc,0

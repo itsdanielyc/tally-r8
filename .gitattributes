@@ -2,3 +2,6 @@
 *.png binary
 *.ico binary
 *.icns binary
+
+# Test fixtures keep their exact bytes (CRLF line endings, encodings).
+tests/fixtures/** -text

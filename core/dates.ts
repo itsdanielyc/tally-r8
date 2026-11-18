@@ -1,6 +1,7 @@
 // Calendar dates as "YYYY-MM-DD" strings. A transaction happens on a day, not
 // at an instant, so there is no time zone anywhere in the ledger and a month
 // is simply the first seven characters.
+import type { DateOrder } from "../contracts/tally";
 
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -28,4 +29,21 @@ export function isValidIsoDate(text: string): boolean {
 /** The local calendar day of an instant, for the form's default date. */
 export function localIsoDate(now: Date): string {
   return isoDate(now.getFullYear(), now.getMonth() + 1, now.getDate()) ?? "2000-01-01";
+}
+
+const PARTS = /^(\d{1,4})[./\- ](\d{1,2})[./\- ](\d{1,4})(?:[T ].*)?$/;
+
+/**
+ * Reads a bank's date ("31/12/2026", "12-31-26", "2026.12.31",
+ * "2026-12-31T00:00:00") in the given order. A four-digit first part is always
+ * a year, whatever the order. Two-digit years are 2000 to 2099.
+ */
+export function parseBankDate(text: string, order: DateOrder): string | null {
+  const m = PARTS.exec(text.trim());
+  if (!m) return null;
+  const [, a, b, c] = m;
+  if (a.length === 4) return isoDate(Number(a), Number(b), Number(c));
+  if (order === "YMD") return a.length === 2 ? isoDate(2000 + Number(a), Number(b), Number(c)) : null;
+  const year = c.length === 4 ? Number(c) : c.length === 2 ? 2000 + Number(c) : NaN;
+  return order === "DMY" ? isoDate(year, Number(b), Number(a)) : isoDate(year, Number(a), Number(b));
 }
