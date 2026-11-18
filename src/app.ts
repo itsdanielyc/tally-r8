@@ -4,16 +4,18 @@
 import type { Result, Snapshot, TallyError } from "../contracts/tally";
 import type { Backend } from "./api";
 import { h, replace } from "./dom";
+import { type ImportState, importView } from "./views/import";
 import { settingsView } from "./views/settings";
 import { transactionsView } from "./views/transactions";
 
-type ViewName = "transactions" | "settings";
+type ViewName = "transactions" | "import" | "settings";
 
 /** Screen state that is not ledger data and does not survive a restart. */
 type UiState = {
   view: ViewName;
   editingId: string | null;
   confirmDeleteId: string | null;
+  importing: ImportState;
   /** The control to focus after the next render, by element id. */
   focus: string | null;
 };
@@ -30,12 +32,13 @@ export type Ctx = {
 
 const VIEWS: { name: ViewName; label: string; draw: (ctx: Ctx) => HTMLElement }[] = [
   { name: "transactions", label: "Transactions", draw: transactionsView },
+  { name: "import", label: "Import", draw: importView },
   { name: "settings", label: "Settings", draw: settingsView },
 ];
 
 export async function startApp(root: HTMLElement, backend: Backend): Promise<void> {
   let snapshot = await backend.load();
-  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, focus: null };
+  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, importing: { file: null, result: null }, focus: null };
   const nav = h("nav", { class: "sidebar", "aria-label": "Sections", "data-geo": "sidebar" });
   const main = h("main", { class: "main", "data-geo": "main" });
   const status = h("footer", { class: "statusbar", "data-geo": "statusbar" });

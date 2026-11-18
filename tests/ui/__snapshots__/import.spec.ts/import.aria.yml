@@ -1,0 +1,103 @@
+- main:
+  - region "Import a bank CSV":
+    - heading "Import a bank CSV" [level=1]
+    - strong: bank-semicolon.csv
+    - button "Choose another file…"
+    - form "Columns":
+      - text: Delimiter
+      - combobox "Delimiter":
+        - option "Comma"
+        - option "Semicolon" [selected]
+        - option "Tab"
+        - option "Pipe"
+      - text: Header row
+      - combobox "Header row":
+        - option "No header row"
+        - 'option /Line 1: Account, DE00 \d+ \d+/'
+        - 'option /Line 2: Statement, October \d+/'
+        - 'option "Line 4: Booking date, Payee, Debit, Credit, Note" [selected]'
+        - 'option /Line 5: \d+\.\d+\.\d+, Employer GmbH, , \d+\.\d+,\d+, …/'
+        - 'option /Line 6: \d+\.\d+\.\d+, Bakery; Miller, \d+,\d+, ,/'
+        - 'option /Line 7: \d+\.\d+\.\d+, City power, \d+,\d+, , Electr…/'
+        - 'option /Line 8: \d+\.\d+\.\d+, Refund shop, , \d+,\d+,/'
+        - 'option /Line 9: \d+\.\d+\.\d+, Both columns, \d+,\d+, \d+,\d+,/'
+        - 'option /Line \d+: \d+\.\d+\.\d+, Neither, , ,/'
+      - text: Date column
+      - combobox "Date column":
+        - option "Booking date" [selected]
+        - option "Payee"
+        - option "Debit"
+        - option "Credit"
+        - option "Note"
+      - text: Date order
+      - combobox "Date order":
+        - option "Year-month-day"
+        - option "Day-month-year" [selected]
+        - option "Month-day-year"
+      - text: Payee column
+      - combobox "Payee column":
+        - option "Booking date"
+        - option "Payee" [selected]
+        - option "Debit"
+        - option "Credit"
+        - option "Note"
+      - text: Decimal separator
+      - combobox "Decimal separator":
+        - option /Point \(\d+,\d+\.\d+\)/
+        - option /Comma \(\d+\.\d+,\d+\)/ [selected]
+      - text: Amount is
+      - radiogroup "Amount is":
+        - radio "One column with a sign"
+        - text: One column with a sign
+        - radio "Debit and credit columns" [checked]
+        - text: Debit and credit columns
+      - text: Debit column (money out)
+      - combobox "Debit column (money out)":
+        - option "Booking date"
+        - option "Payee"
+        - option "Debit" [selected]
+        - option "Credit"
+        - option "Note"
+      - text: Credit column (money in)
+      - combobox "Credit column (money in)":
+        - option "Booking date"
+        - option "Payee"
+        - option "Debit"
+        - option "Credit" [selected]
+        - option "Note"
+    - paragraph: 4 rows will be imported · 0 already in the ledger · 2 cannot be read
+    - table "Preview":
+      - rowgroup:
+        - row "Line Date Payee Amount (USD)":
+          - columnheader "Line"
+          - columnheader "Date"
+          - columnheader "Payee"
+          - columnheader "Amount (USD)"
+      - rowgroup:
+        - row /5 \d+-\d+-\d+ Employer GmbH \+\d+,\d+\.\d+/:
+          - cell "5"
+          - cell /\d+-\d+-\d+/
+          - cell "Employer GmbH"
+          - cell /\+\d+,\d+\.\d+/
+        - row /6 \d+-\d+-\d+ Bakery; Miller -\d+\.\d+/:
+          - cell "6"
+          - cell /\d+-\d+-\d+/
+          - cell "Bakery; Miller"
+          - cell /-\d+\.\d+/
+        - row /7 \d+-\d+-\d+ City power -\d+\.\d+/:
+          - cell "7"
+          - cell /\d+-\d+-\d+/
+          - cell "City power"
+          - cell /-\d+\.\d+/
+        - row /8 \d+-\d+-\d+ Refund shop \+\d+\.\d+/:
+          - cell "8"
+          - cell /\d+-\d+-\d+/
+          - cell "Refund shop"
+          - cell /\+\d+\.\d+/
+    - region "Rows that cannot be read":
+      - heading "Rows that cannot be read" [level=2]
+      - list:
+        - listitem: "Line 9: row has both a debit and a credit amount"
+        - listitem: "/Line \\d+: row has no debit or credit amount/"
+    - button "Import 4 transactions"
+    - button "Cancel"

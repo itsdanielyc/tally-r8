@@ -71,6 +71,6 @@ export function transactionsView(ctx: Ctx): HTMLElement {
       h("p", { class: "count", "data-testid": "count" }, `${count} ${count === 1 ? "transaction" : "transactions"}`),
     ),
     transactionForm(ctx),
-    count > 0 ? ledgerTable(ctx) : h("p", { class: "empty", "data-geo": "empty" }, "No transactions yet. Add the first one above."),
+    count > 0 ? ledgerTable(ctx) : h("p", { class: "empty", "data-geo": "empty" }, "No transactions yet. Add the first one above, or import a bank CSV."),
   );
 }

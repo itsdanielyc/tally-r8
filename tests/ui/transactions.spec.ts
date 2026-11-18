@@ -35,7 +35,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("starts empty, with today's date in the form", async ({ page }) => {
-  await expect(page.getByText("No transactions yet. Add the first one above.")).toBeVisible();
+  await expect(page.getByText("No transactions yet. Add the first one above, or import a bank CSV.")).toBeVisible();
   await expect(page.getByTestId("count")).toHaveText("0 transactions");
   await expect(page.getByLabel("Date")).toHaveValue("2026-11-18");
   await expect(page.getByRole("radio", { name: "Spending" })).toBeChecked();
