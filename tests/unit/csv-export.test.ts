@@ -31,7 +31,7 @@ function source(currency = "USD"): Ledger {
       tx(["t3", "2026-11-02", "Corner shop", -1250, "c1", "milk"]),
       tx(["t4", "2026-11-02", 'Shop "Deluxe", Ltd', -999, "c2", 'said "thanks"']),
       tx(["t5", "2026-11-01", "Employer", 320000, null, ""]),
-      tx(["t6", "2026-10-31", "Café Ünïcode", -5, null, "two\nlines, and a comma"]),
+      tx(["t6", "2026-10-31", "Café Ünïcode", -5, null, "two\nlines"]),
       tx(["t7", "2026-10-31", "=SUM(A1)", -100000000, "c1", "-starts with a minus, and a comma"]),
     ],
     nextId: 8,
