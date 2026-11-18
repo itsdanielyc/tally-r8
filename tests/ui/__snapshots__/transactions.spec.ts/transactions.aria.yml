@@ -4,6 +4,12 @@
     - listitem:
       - button "Transactions"
     - listitem:
+      - button "Import"
+    - listitem:
+      - button "Categories"
+    - listitem:
+      - button "Summary"
+    - listitem:
       - button "Settings"
 - main:
   - region "Transactions":
