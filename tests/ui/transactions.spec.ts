@@ -149,6 +149,8 @@ async function sample(page: Page): Promise<void> {
   await add(page, { date: "2026-11-02", amount: "12.50", payee: "Corner shop", note: "milk" });
   await add(page, { date: "2026-11-01", amount: "2500", payee: "Employer", note: "November", income: true });
   await add(page, { date: "2026-10-28", amount: "64.20", payee: "Electricity" });
+  // The last Add answers asynchronously: wait for its row before any snapshot is taken.
+  await expect(rows(page)).toHaveCount(3);
   await page.getByLabel("Amount").blur();
 }
 

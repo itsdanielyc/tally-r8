@@ -12,6 +12,10 @@ async function pick(page: Page, name: string): Promise<void> {
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: /Choose (a|another) CSV file/ }).click();
   await (await chooser).setFiles(csv(name));
+  // The file is read asynchronously; until the preview is drawn a snapshot
+  // would capture the start panel (seen on a macOS runner, reproduced locally
+  // by delaying the read).
+  await expect(page.getByTestId("import-summary")).toBeVisible();
 }
 
 const summary = (page: Page) => page.getByTestId("import-summary");
