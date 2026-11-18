@@ -48,6 +48,8 @@ function amountFields(p: PickedImport, columns: Option[], change: (patch: Partia
     select("map-credit", "Credit column (money in)", columns, String(a.credit), (v) => change({ amount: { ...a, credit: Number(v) } }))];
 }
 
+const optionalValue = (column: number | null | undefined) => (column === null || column === undefined ? "none" : String(column));
+
 /** The mapping form; `update` stores the new pick and redraws. */
 export function mappingForm(p: PickedImport, update: (next: PickedImport) => void): HTMLElement {
   const change = (patch: Partial<ImportMapping>) => update({ ...p, mapping: { ...p.mapping, ...patch } });
@@ -67,6 +69,10 @@ export function mappingForm(p: PickedImport, update: (next: PickedImport) => voi
       select("map-payee", "Payee column", columns, String(p.mapping.payee), (v) => change({ payee: Number(v) })),
       select("map-decimal", "Decimal separator", [[".", "Point (1,234.56)"], [",", "Comma (1.234,56)"]], p.mapping.decimal,
         (v) => change({ decimal: v === "," ? "," : "." })),
+      select("map-category", "Category column (optional)", [["none", "None"], ...columns], optionalValue(p.mapping.category),
+        (v) => change({ category: v === "none" ? null : Number(v) })),
+      select("map-note", "Note column (optional)", [["none", "None"], ...columns], optionalValue(p.mapping.note),
+        (v) => change({ note: v === "none" ? null : Number(v) })),
     ),
     h("div", { class: "mapping-amount" }, ...amountFields(p, columns, change)),
   );

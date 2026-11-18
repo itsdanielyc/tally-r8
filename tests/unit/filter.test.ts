@@ -53,7 +53,7 @@ describe("applyFilter", () => {
 
   it("reports what it cannot read and ignores that part", () => {
     const r = run({ from: "31/10/2026", min: "lots" });
-    expect(r.problems).toEqual(["From must be a real day, as YYYY-MM-DD.", 'Smallest amount: Amount "lots" is not a number.']);
+    expect(r.problems).toEqual(["From must be a real day, as YYYY-MM-DD.", 'At least: Amount "lots" is not a number.']);
     expect(r.shown).toHaveLength(4);
   });
 });

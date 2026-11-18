@@ -56,7 +56,7 @@ function startPanel(ctx: Ctx): HTMLElement {
   );
 }
 
-function previewTable(ctx: Ctx, rows: { line: number; date: string; payee: string; amount: number; categoryId: string | null }[]): HTMLElement {
+function previewTable(ctx: Ctx, rows: { line: number; date: string; payee: string; amount: number; categoryId: string | null; newCategory: string | null }[]): HTMLElement {
   const digits = currencyDigits(ctx.snapshot.settings.currency);
   const category = (id: string | null) => ctx.snapshot.categories.find((c) => c.id === id)?.name;
   return h("table", { class: "ledger preview", "aria-label": "Preview", "data-geo": "preview" },
@@ -70,7 +70,9 @@ function previewTable(ctx: Ctx, rows: { line: number; date: string; payee: strin
       h("td", { class: "line" }, String(r.line)),
       h("td", { class: "date" }, r.date),
       h("td", { class: "payee", title: r.payee }, r.payee),
-      h("td", { class: category(r.categoryId) ? "category" : "category none" }, category(r.categoryId) ?? "Uncategorised"),
+      r.newCategory !== null
+        ? h("td", { class: "category" }, `${r.newCategory} (new)`)
+        : h("td", { class: category(r.categoryId) ? "category" : "category none" }, category(r.categoryId) ?? "Uncategorised"),
       h("td", { class: r.amount > 0 ? "amount income" : "amount spending" }, (r.amount > 0 ? "+" : "") + formatAmount(r.amount, digits))))),
   );
 }

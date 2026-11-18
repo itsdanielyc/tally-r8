@@ -125,7 +125,6 @@ export function categoriesView(ctx: Ctx): HTMLElement {
     h("header", { class: "view-head" },
       h("h1", { id: "view-title" }, "Categories"),
       h("p", { class: "count" }, `${n} ${n === 1 ? "category" : "categories"}`)),
-    ctx.ui.flash ? h("p", { class: "flash", role: "status" }, ctx.ui.flash) : null,
     h("fieldset", { class: "plain", disabled: ctx.snapshot.status.kind !== "ok" },
       createForm(ctx),
       n > 0 ? categoryTable(ctx) : h("p", { class: "empty", "data-geo": "empty" }, "No categories yet. Create the first one above."),

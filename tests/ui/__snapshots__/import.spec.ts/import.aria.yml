@@ -45,6 +45,22 @@
       - combobox "Decimal separator":
         - option /Point \(\d+,\d+\.\d+\)/
         - option /Comma \(\d+\.\d+,\d+\)/ [selected]
+      - text: Category column (optional)
+      - combobox "Category column (optional)":
+        - option "None" [selected]
+        - option "Booking date"
+        - option "Payee"
+        - option "Debit"
+        - option "Credit"
+        - option "Note"
+      - text: Note column (optional)
+      - combobox "Note column (optional)":
+        - option "None"
+        - option "Booking date"
+        - option "Payee"
+        - option "Debit"
+        - option "Credit"
+        - option "Note" [selected]
       - text: Amount is
       - radiogroup "Amount is":
         - radio "One column with a sign"

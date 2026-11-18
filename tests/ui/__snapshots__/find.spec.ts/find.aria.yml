@@ -1,0 +1,89 @@
+- main:
+  - text: Imported 7 transactions.
+  - button "Undo"
+  - region "Transactions":
+    - heading "Transactions" [level=1]
+    - paragraph: 7 transactions
+    - form "New transaction":
+      - group:
+        - text: Date
+        - textbox "Date": /\d+-\d+-\d+/
+        - text: Kind
+        - radiogroup "Kind":
+          - radio "Spending" [checked]
+          - text: Spending
+          - radio "Income"
+          - text: Income
+        - text: Amount
+        - textbox "Amount":
+          - /placeholder: "0.00"
+        - text: Payee
+        - textbox "Payee"
+        - text: Category
+        - combobox "Category":
+          - option "Uncategorised" [selected]
+          - option "Eating out"
+          - option "Groceries"
+        - text: Note
+        - textbox "Note"
+        - button "Add"
+    - search "Find transactions":
+      - text: Search
+      - searchbox "Search": market
+      - text: In
+      - combobox "In":
+        - option "Any category" [selected]
+        - option "Uncategorised"
+        - option "Eating out"
+        - option "Groceries"
+      - text: From
+      - textbox "From"
+      - text: To
+      - textbox "To"
+      - text: At least
+      - textbox "At least":
+        - /placeholder: "0.00"
+      - text: At most
+      - textbox "At most":
+        - /placeholder: "0.00"
+      - button "Clear"
+    - text: Showing 3 of 7
+    - status
+    - button "Export shown to CSV"
+    - table "Transactions":
+      - rowgroup:
+        - row "Date Payee Category Note Amount (USD) Actions":
+          - columnheader "Date"
+          - columnheader "Payee"
+          - columnheader "Category"
+          - columnheader "Note"
+          - columnheader "Amount (USD)"
+          - columnheader "Actions"
+      - rowgroup:
+        - row /\d+-\d+-\d+ Market Hall refund Groceries \+\d+\.\d+ Edit Delete/:
+          - cell /\d+-\d+-\d+/
+          - cell "Market Hall refund"
+          - cell "Groceries"
+          - cell
+          - cell /\+\d+\.\d+/
+          - cell "Edit Delete":
+            - button "Edit"
+            - button "Delete"
+        - row /\d+-\d+-\d+ Market Hall Groceries -\d+\.\d+ Edit Delete/:
+          - cell /\d+-\d+-\d+/
+          - cell "Market Hall"
+          - cell "Groceries"
+          - cell
+          - cell /-\d+\.\d+/
+          - cell "Edit Delete":
+            - button "Edit"
+            - button "Delete"
+        - row /\d+-\d+-\d+ Market Hall Groceries -\d+\.\d+ Edit Delete/:
+          - cell /\d+-\d+-\d+/
+          - cell "Market Hall"
+          - cell "Groceries"
+          - cell
+          - cell /-\d+\.\d+/
+          - cell "Edit Delete":
+            - button "Edit"
+            - button "Delete"

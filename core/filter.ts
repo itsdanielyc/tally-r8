@@ -49,8 +49,8 @@ function matches(t: Transaction, f: Filter, range: { from: string | null; to: st
 export function applyFilter(transactions: Transaction[], f: Filter, digits: number): { shown: Transaction[]; problems: string[] } {
   const from = dateBound(f.from, "From");
   const to = dateBound(f.to, "To");
-  const min = bound(f.min, digits, "Smallest amount");
-  const max = bound(f.max, digits, "Largest amount");
+  const min = bound(f.min, digits, "At least");
+  const max = bound(f.max, digits, "At most");
   const problems = [from, to, min, max].map((b) => b.problem).filter((p): p is string => p !== null);
   const range = { from: from.value, to: to.value, min: min.value, max: max.value };
   return { shown: transactions.filter((t) => matches(t, f, range)), problems };

@@ -4,6 +4,12 @@
     - listitem:
       - button "Transactions"
     - listitem:
+      - button "Import"
+    - listitem:
+      - button "Categories"
+    - listitem:
+      - button "Summary"
+    - listitem:
       - button "Settings"
 - main:
   - region "Transactions":
@@ -30,6 +36,27 @@
         - text: Note
         - textbox "Note"
         - button "Add"
+    - search "Find transactions":
+      - text: Search
+      - searchbox "Search"
+      - text: In
+      - combobox "In":
+        - option "Any category" [selected]
+        - option "Uncategorised"
+      - text: From
+      - textbox "From"
+      - text: To
+      - textbox "To"
+      - text: At least
+      - textbox "At least":
+        - /placeholder: "0.00"
+      - text: At most
+      - textbox "At most":
+        - /placeholder: "0.00"
+      - button "Clear" [disabled]
+    - text: Showing all 3
+    - status
+    - button "Export shown to CSV"
     - table "Transactions":
       - rowgroup:
         - row "Date Payee Category Note Amount (USD) Actions":
