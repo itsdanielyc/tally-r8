@@ -21,10 +21,10 @@ export function removeDir(dir: string): void {
   }
 }
 
-export async function launch(dataDir: string): Promise<Launched> {
+export async function launch(dataDir: string, extraEnv: Record<string, string> = {}): Promise<Launched> {
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(process.env)) if (v !== undefined) env[k] = v;
-  env.TALLY_DATA_DIR = dataDir;
+  Object.assign(env, extraEnv, { TALLY_DATA_DIR: dataDir });
   const app = await electron.launch({ args: ["."], cwd: process.cwd(), env });
   const win = await app.firstWindow();
   const errors: string[] = [];
