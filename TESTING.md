@@ -22,8 +22,8 @@ Tier 1 is windows-x64, macos-arm64, linux-x64 (`keel.json`); there is no Tier
 
 | Journey | Proven at | Tests |
 |---|---|---|
-| Record, edit, delete a transaction; still there after a restart | L1, L2, L3, L4, L5, L6 | |
-| A save interrupted at any step leaves a ledger that opens; older file versions open | L3 | |
+| Record, edit, delete a transaction; still there after a restart | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/transactions.test.ts`, `tests/unit/money.test.ts`, `tests/unit/service.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/store.test.ts`; L4/L5 `tests/ui/transactions.spec.ts`; L6 `tests/e2e/record.spec.ts` |
+| A save interrupted at any step leaves a ledger that opens; older file versions open | L3, L6 | L3 `tests/integration/store.test.ts` (a failure at each write step, unreadable and newer files, version fixtures); L6 `tests/e2e/record.spec.ts` (hard kill after a change, unreadable file left alone) |
 | Import a bank CSV: detect, map, preview, rejected rows, duplicates skipped, all or none | L1, L2, L3, L4, L5, L6 | |
 | A 2,000-row CSV imports in under five seconds | L3 | |
 | Categorise by hand and by payee rules; delete and merge categories | L1, L2, L3, L4, L5 | |

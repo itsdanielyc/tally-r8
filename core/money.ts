@@ -5,7 +5,7 @@
 export type Currency = { code: string; name: string; digits: number };
 
 /** ISO 4217 codes with their minor-unit digits. */
-const CURRENCIES: readonly Currency[] = [
+export const CURRENCIES: readonly Currency[] = [
   { code: "AUD", name: "Australian dollar", digits: 2 },
   { code: "BHD", name: "Bahraini dinar", digits: 3 },
   { code: "BRL", name: "Brazilian real", digits: 2 },
@@ -94,4 +94,21 @@ export function formatAmount(minor: number, digits: number): string {
 /** The same amount without grouping, for exports and form fields: "-1234.56". */
 export function plainAmount(minor: number, digits: number): string {
   return formatAmount(minor, digits).replaceAll(",", "");
+}
+
+/**
+ * An amount typed into the form: unsigned (the Spending or Income choice
+ * gives the sign), with a decimal point or a decimal comma.
+ */
+export function parseTypedAmount(text: string, digits: number): ParsedAmount {
+  const raw = text.trim();
+  if (/^[+-]/.test(raw)) return { ok: false, reason: "Type the amount without a sign; choose Spending or Income." };
+  let parsed = parseAmount(raw, digits, ".");
+  if (!parsed.ok && raw.includes(",")) {
+    const comma = parseAmount(raw, digits, ",");
+    if (comma.ok) parsed = comma;
+  }
+  if (!parsed.ok) return { ok: false, reason: parsed.reason[0].toUpperCase() + parsed.reason.slice(1) + "." };
+  if (parsed.value === 0) return { ok: false, reason: "Amount cannot be zero." };
+  return parsed;
 }
