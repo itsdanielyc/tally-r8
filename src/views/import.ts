@@ -16,7 +16,6 @@ export type ImportState = {
 };
 
 const PREVIEW_ROWS = 10;
-const LISTED_REJECTIONS = 50;
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
@@ -79,11 +78,9 @@ function previewTable(ctx: Ctx, rows: { line: number; date: string; payee: strin
 
 function rejectedList(rejected: { line: number; reason: string }[]): HTMLElement | null {
   if (rejected.length === 0) return null;
-  const more = rejected.length - LISTED_REJECTIONS;
   return h("section", { class: "rejected", "aria-labelledby": "rejected-title" },
     h("h2", { id: "rejected-title" }, "Rows that cannot be read"),
-    h("ul", {}, ...rejected.slice(0, LISTED_REJECTIONS).map((r) => h("li", {}, `Line ${r.line}: ${r.reason}`))),
-    more > 0 && h("p", { class: "hint" }, `…and ${more} more.`),
+    h("ul", {}, ...rejected.map((r) => h("li", {}, `Line ${r.line}: ${r.reason}`))),
   );
 }
 
@@ -110,7 +107,14 @@ function reviewPanel(ctx: Ctx, file: PickedImport): HTMLElement[] {
     rejectedList(rejected),
     ctx.ui.importing.error ? h("p", { class: "form-error", role: "alert" }, ctx.ui.importing.error) : null,
     h("div", { class: "import-actions" },
-      h("button", { type: "button", class: "primary", disabled: rows.length === 0, onclick: () => void confirm(ctx, file) },
+      h("button", {
+        type: "button", class: "primary", disabled: rows.length === 0,
+        // Disabled at once, so a second click cannot start a second import.
+        onclick: (e: Event) => {
+          (e.currentTarget as HTMLButtonElement).disabled = true;
+          void confirm(ctx, file);
+        },
+      },
         `Import ${plural(rows.length, "transaction", "transactions")}`),
       h("button", { type: "button", onclick: cancel }, "Cancel")),
   ].filter((el): el is HTMLElement => el !== null);

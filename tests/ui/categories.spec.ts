@@ -62,6 +62,21 @@ test("renames in the row, and Escape cancels", async ({ page }) => {
   await expect(categoryRows(page).locator("td.name")).toHaveText(["Groceries"]);
 });
 
+// Bug hunt L7: after a refused rename, a successful one used to leave the editor coming back.
+test("after a refused rename, a good one closes the editor for good", async ({ page }) => {
+  await createCategory(page, "Bills");
+  await createCategory(page, "Grocery");
+  await categoryRow(page, "Grocery").getByRole("button", { name: "Rename" }).click();
+  await page.getByLabel("New name for Grocery").fill("bills");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.locator("form.rename").getByRole("alert")).toHaveText('There is already a category called "bills".');
+  await page.getByLabel("New name for Grocery").fill("Groceries");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(categoryRows(page).locator("td.name")).toHaveText(["Bills", "Groceries"]);
+  await createCategory(page, "Travel");
+  await expect(page.locator("form.rename")).toHaveCount(0);
+});
+
 test("a category picked in the entry form shows in the list; deleting it leaves the transaction uncategorised", async ({ page }) => {
   await createCategory(page, "Groceries");
   await addTransaction(page, "Corner shop", "Groceries");

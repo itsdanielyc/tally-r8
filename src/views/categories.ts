@@ -5,15 +5,16 @@ import type { Ctx } from "../app";
 import { h } from "../dom";
 import { rulesSection } from "./rules";
 
-/** Sends a change; on success shows `done`, on failure the error in `errorEl`. */
-async function send(ctx: Ctx, call: Promise<Result<Snapshot>>, errorEl: HTMLElement, done: string | null = null): Promise<void> {
+/** Sends a change; on success shows `done` and says true, on failure puts the error in `errorEl`. */
+async function send(ctx: Ctx, call: Promise<Result<Snapshot>>, errorEl: HTMLElement, done: string | null = null): Promise<boolean> {
   const r = await call;
   if (!r.ok) {
     errorEl.textContent = r.error.message;
-    return;
+    return false;
   }
   ctx.ui.flash = done;
   ctx.apply(r);
+  return true;
 }
 
 function createForm(ctx: Ctx): HTMLElement {
@@ -46,8 +47,9 @@ function renameCell(ctx: Ctx, c: Category): HTMLElement {
       onsubmit: (e: Event) => {
         e.preventDefault();
         ctx.ui.renamingId = null;
-        void send(ctx, ctx.backend.renameCategory(c.id, input.value), error).then(() => {
-          if (error.textContent) ctx.ui.renamingId = c.id;
+        void send(ctx, ctx.backend.renameCategory(c.id, input.value), error).then((saved) => {
+          // Refused: the editor stays open with its message, and stays open on the next drawing.
+          if (!saved) ctx.ui.renamingId = c.id;
         });
       },
       onkeydown: (e: Event) => {

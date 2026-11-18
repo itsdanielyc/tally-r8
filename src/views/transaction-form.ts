@@ -84,13 +84,19 @@ export function transactionForm(ctx: Ctx): HTMLFormElement {
   const actions = editing
     ? [h("button", { type: "submit", class: "primary" }, "Save"), h("button", { type: "button", onclick: cancel }, "Cancel")]
     : [h("button", { type: "submit", class: "primary" }, "Add")];
+  // One save at a time: a second submit while the first is on its way is ignored.
+  let busy = false;
   const form = h("form", {
     class: "entry",
     "aria-label": editing ? "Edit transaction" : "New transaction",
     "data-geo": "entry",
     onsubmit: (e: Event) => {
       e.preventDefault();
-      void submit(ctx, f, editing);
+      if (busy) return;
+      busy = true;
+      void submit(ctx, f, editing).finally(() => {
+        busy = false;
+      });
     },
     onkeydown: (e: Event) => {
       if (editing && (e as KeyboardEvent).key === "Escape") cancel();

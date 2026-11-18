@@ -94,6 +94,30 @@ test("every mapping change redraws the preview", async ({ page }) => {
   await expect(summary(page)).not.toHaveText(signed);
 });
 
+// Bug hunt M1: only the first 50 rejected rows used to be listed.
+test("lists every row it cannot read, however many", async ({ page }) => {
+  const lines = ["Date,Description,Amount"];
+  for (let i = 0; i < 130; i++) lines.push(i % 13 === 0 ? `2026-10-${String((i % 28) + 1).padStart(2, "0")},Good ${i},-1.00` : `day ${i},Bad ${i},-1.00`);
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: "Choose a CSV file…" }).click();
+  await (await chooser).setFiles({ name: "many-bad.csv", mimeType: "text/csv", buffer: Buffer.from(lines.join("\n")) });
+  await expect(summary(page)).toHaveText("10 rows will be imported · 0 already in the ledger · 120 cannot be read");
+  const listed = page.getByRole("region", { name: "Rows that cannot be read" }).getByRole("listitem");
+  await expect(listed).toHaveCount(120);
+  await expect(listed.last()).toHaveText('Line 131: date "day 129" is not a year-month-day date');
+});
+
+// Bug hunt L8: a second click while the first import was running imported nothing and replaced the message.
+test("a double click on Import imports once", async ({ page }) => {
+  await pick(page, "bank-comma.csv");
+  await page.getByRole("button", { name: "Import 6 transactions" }).evaluate((b: HTMLButtonElement) => {
+    b.click();
+    b.click();
+  });
+  await expect(page.getByRole("status")).toHaveText(
+    "Imported 6 transactions from bank-comma.csv. 0 rows were already in the ledger and skipped; 2 rows could not be read.");
+});
+
 test("cancel leaves the ledger as it was", async ({ page }) => {
   await pick(page, "bank-comma.csv");
   await page.getByRole("button", { name: "Cancel" }).click();

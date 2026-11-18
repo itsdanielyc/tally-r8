@@ -292,3 +292,4 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   border: 1px solid var(--border-strong); border-radius: var(--radius-panel); background: var(--surface);
   height: 48px;
 }
+.rejected ul { max-height: 240px; overflow: auto; }
