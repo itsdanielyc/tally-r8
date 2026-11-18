@@ -13,7 +13,7 @@ sandboxed and reaches them only through the typed preload bridge.
 | Backend commands: `electron/ipc.ts`, `electron/preload.ts`, `electron/bridge.ts`, `electron/backend.ts` | one IPC channel per `TallyApi` call; checks every argument the renderer sends | `core/service.ts`, `electron/store.ts`, `electron/dialogs.ts` | the DOM, the UI's state |
 | Domain: `core/` | pure rules: money, dates, validation, CSV parse and import plan, categories and rules, monthly summary, filter, export, the service (the one save pipeline and undo) | only `core/` and `contracts/` | I/O of any kind, Electron, the DOM |
 | Persistence: `electron/store.ts`, `electron/migrate.ts` | the ledger file: versioned JSON, migrations, crash-safe writes | `node:fs`, `contracts/` | IPC, the UI |
-| Platform: `electron/main.ts`, `electron/dialogs.ts` | window, app lifecycle, data folder, open and save dialogs | `electron` | ledger rules |
+| Platform: `electron/main.ts`, `electron/dialogs.ts`, `electron/files.ts` | window, app lifecycle, data folder, open and save dialogs, reading and decoding a picked file | `electron`, `node:fs` | ledger rules |
 
 Where a new feature goes: a rule about money, dates, transactions,
 categories or CSV is a pure function in `core/`; a new call is a `TallyApi`
