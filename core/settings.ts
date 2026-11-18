@@ -21,5 +21,6 @@ export function setCurrency(ledger: Ledger, code: unknown): Result<Ledger> {
       },
     };
   }
+  if (next.code === ledger.settings.currency) return { ok: true, value: ledger };
   return { ok: true, value: { ...ledger, settings: { ...ledger.settings, currency: next.code } } };
 }

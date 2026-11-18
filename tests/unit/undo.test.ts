@@ -94,6 +94,26 @@ describe("undo", () => {
     expect(code(await s.undo())).toBe("not_found");
   });
 
+  // Bug hunt L4: saving an edit that changes nothing used to forget the undo.
+  it("a save that changes nothing keeps it, and writes nothing", async () => {
+    let saves = 0;
+    const store: LedgerStore = { file: "t", save: async () => { saves++; } };
+    const s = new TallyService({ ledger: emptyLedger(), status: { kind: "ok" } }, store);
+    ok(await s.addTransaction(tx("One")));
+    ok(await s.addTransaction(tx("Two")));
+    ok(await s.createCategory("Food")); // c3
+    ok(await s.setBudget("c3", 500));
+    ok(await s.deleteTransaction("t2"));
+    const before = saves;
+    ok(await s.updateTransaction("t1", { ...tx("  One "), note: " " }));
+    ok(await s.renameCategory("c3", "Food"));
+    ok(await s.setBudget("c3", 500));
+    ok(await s.setCurrency("USD"));
+    expect(saves).toBe(before);
+    expect((await s.load()).undo?.label).toBe('Deleted the transaction "Two" of 2026-11-02');
+    expect(payees(ok(await s.undo()))).toEqual(["Two", "One"]);
+  });
+
   it("a refused change does not forget it", async () => {
     const s = await service();
     ok(await s.deleteTransaction("t1"));
