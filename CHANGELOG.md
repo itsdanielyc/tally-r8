@@ -53,6 +53,7 @@ silicon and Linux x64, in one local file.
 - A category filter is dropped when its category is merged or deleted.
 - Renaming a category after a refused name no longer reopens the editor.
 - A double click on Add or Import no longer adds the transactions twice.
+- Dates are no longer cut off in the lists with the Linux and macOS system fonts.
 
 ### Known defects
 
