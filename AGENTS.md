@@ -19,8 +19,8 @@ builds everything (solo).
 - lint (L0): `npm run lint` (tsc three times, ESLint with the size limits, knip)
 - unit (L1): `npm run test:unit`; contract (L2, mock vs the real backend): `npm run test:contract`
 - integration (L3, the ledger file in temp folders): `npm run test:integration`
-- ui (L4/L5): `npm run test:ui` (Playwright, chromium, against the labelled mock; starts Vite itself)
-- e2e (L6): `npm run test:e2e` (needs `npm run build` first)
+- ui (L4/L5): `npm run test:ui` (Playwright, chromium, against the labelled mock; starts its own Vite, never reuses one; `TALLY_UI_PORT` when 1420 is taken)
+- e2e (L6): `npm run test:e2e` (needs `npm run build` first; each suite gets a temp `TALLY_DATA_DIR`)
 - installers (L7): the `installers` workflow; locally `npm run package`
 - triage a CI run: `npm run triage [run-id]`
 - verify the app end to end: the `verify-tally` skill in `.agents/skills`
