@@ -68,6 +68,13 @@ describe("planImport", () => {
     expect(p.rows[0].payee).toHaveLength(200);
   });
 
+  it("lists a record whose quote never closes by its line, and imports the rows after it (bug hunt M2)", () => {
+    const text = 'Date,Description,Amount\n2026-01-05,"Joe\'s Diner,-12.00\n2026-01-06,Shop,-1.00\n2026-01-07,Bakery,-2.00\n';
+    const p = ok(planImport(text, COMMA, emptyLedger()));
+    expect(brief(p)).toEqual([[3, "2026-01-06", "Shop", -100], [4, "2026-01-07", "Bakery", -200]]);
+    expect(p.rejected).toEqual([{ line: 2, reason: "a quoted field is never closed" }]);
+  });
+
   it("follows the currency's digits", () => {
     const yen: Ledger = { ...emptyLedger(), settings: { currency: "JPY" } };
     const p = ok(planImport("d,p,a\n2026-01-01,Shop,-1200\n2026-01-02,Cafe,-3.50", COMMA, yen));

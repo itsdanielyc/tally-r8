@@ -95,6 +95,7 @@ function readCategory(cells: string[], m: ImportMapping, ledger: LedgerView, pay
 }
 
 function readRow(r: CsvRecord, m: ImportMapping, ledger: LedgerView, needed: number): ImportRow | Rejected {
+  if (r.broken) return { line: r.line, reason: "a quoted field is never closed" };
   if (r.cells.length < needed) return { line: r.line, reason: `has ${r.cells.length} fields; the mapping needs ${needed}` };
   const rawDate = r.cells[m.date].trim();
   const date = parseBankDate(rawDate, m.dateOrder);

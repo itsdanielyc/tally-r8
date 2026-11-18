@@ -31,7 +31,8 @@ const NAMES = {
   date: /date|datum|fecha|booked|posted/i,
   debit: /debit|withdrawal|paid out|money out|outflow/i,
   credit: /credit|deposit|paid in|money in|inflow/i,
-  amount: /amount|betrag|importe|montant|value|sum/i,
+  // "Value" names an amount, but "Value date" is a date.
+  amount: /amount|betrag|importe|montant|\bvalue\b(?!\s*date)|\bsum\b/i,
   payee: /payee|description|merchant|name|details|narrative|memo|beneficiary|counterparty|reference|text/i,
   category: /^categor/i,
   note: /^(notes?|memo|comments?)$/i,
