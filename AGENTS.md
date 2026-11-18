@@ -60,5 +60,6 @@ builds everything (solo).
 
 PRODUCT.md (brief), docs/adr/ (decisions), ARCHITECTURE.md (boundaries),
 TESTING.md (strategy), PLAN.md (slices), VERIFICATION.md (evidence),
-DESIGN.md (UI decisions).
+DESIGN.md (UI decisions), CHANGELOG.md and docs/release-notes-0.1.0.md
+(release, signing status, known defects).
 <!-- keel:end -->

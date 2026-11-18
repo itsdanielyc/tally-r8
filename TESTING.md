@@ -22,7 +22,7 @@ Tier 1 is windows-x64, macos-arm64, linux-x64 (`keel.json`); there is no Tier
 
 | Journey | Proven at | Tests |
 |---|---|---|
-| Record, edit, delete a transaction; still there after a restart | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/transactions.test.ts`, `tests/unit/money.test.ts`, `tests/unit/service.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/store.test.ts`; L4/L5 `tests/ui/transactions.spec.ts`; L6 `tests/e2e/record.spec.ts` |
+| Record, edit, delete a transaction; still there after a restart | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/transactions.test.ts`, `tests/unit/money.test.ts`, `tests/unit/service.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/store.test.ts`; L4/L5 `tests/ui/transactions.spec.ts`; L6 `tests/e2e/record.spec.ts`; L4 the same file also checks no date or amount is cut off; L6 `tests/e2e/failures.spec.ts` (a delete that cannot be saved says so and keeps the row) |
 | A save interrupted at any step leaves a ledger that opens; older file versions open | L3, L6 | L3 `tests/integration/store.test.ts` (a failure at each write step, unreadable and newer files, version fixtures); L6 `tests/e2e/record.spec.ts` (hard kill after a change, unreadable file left alone) |
 | Import a bank CSV: detect, map, preview, rejected rows, duplicates skipped, all or none | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/csv-parse.test.ts`, `tests/unit/import-plan.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/import.test.ts` (decoding, all or none on disk); L4/L5 `tests/ui/import.spec.ts`; L6 `tests/e2e/import.spec.ts` (open-dialog bypass `TALLY_OPEN_PATH`) |
 | A 2,000-row CSV imports in under five seconds | L3, L6 | L3 `tests/integration/import.test.ts` (read from disk, imported, saved); L6 `tests/e2e/import.spec.ts` (timed from choosing the file to the list showing 2000) |
@@ -49,7 +49,8 @@ only).
 
 - Screen readers and keyboard-only use beyond the ARIA tree: manual, not
   automated, and not claimed.
-- Bank CSVs in encodings other than UTF-8 and Windows-1252.
+- Bank CSVs in encodings other than UTF-8 and Windows-1252 (UTF-16 is a known defect in the 0.1.0 release notes).
+- The tag-driven release workflow (`.github/workflows/release.yml`): it runs only on a tag, and no tag exists yet.
 - Power loss at the hardware level: L3 injects a failure at every step of the
   write sequence, which proves the protocol, not the disk's fsync.
 - Signed installers: 0.1.0 is unsigned (ADR 001).

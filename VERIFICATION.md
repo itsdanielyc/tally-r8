@@ -39,6 +39,10 @@ Runs are in https://github.com/itsdanielyc/tally-r8/actions/runs/<id>.
 
 ## Unverified
 
-- Slices 2 to 6: not yet run in CI.
+- Slice 6 release readiness: the release commit has not yet run ci and installers on main.
+- The tag-driven release workflow has never run (no tag exists, by instruction); its gate job is the reference workflow proven on the tauri-web proof repository, the Electron build steps are this repository's installers workflow.
+- Power loss at the hardware level: L3 fails each step of the write sequence, which proves the protocol, not the disk.
+- Screen readers and keyboard-only use beyond the ARIA snapshots: not tested.
+- Bank CSVs in UTF-16: not read (known defect).
 - Nothing is signed or notarized (ADR 001).
 - No Tier 2 or Tier 3 platforms exist (ADR 002), so none are tested.
