@@ -152,6 +152,15 @@ async function sample(page: Page): Promise<void> {
   await page.getByLabel("Amount").blur();
 }
 
+// Visual QA (slice 6): with the Linux and macOS system fonts the date column
+// cut dates to "2026-11-…". Every date and amount must show whole on every OS.
+test("dates and amounts are shown whole, never cut off", async ({ page }) => {
+  await sample(page);
+  const cut = await page.locator("td.date, td.amount").evaluateAll((tds) =>
+    tds.filter((td) => td.scrollWidth > td.clientWidth).map((td) => td.textContent));
+  expect(cut).toEqual([]);
+});
+
 test("tier 1: accessibility structure is identical everywhere", async ({ page }) => {
   await sample(page);
   await expect(page.locator("body")).toMatchAriaSnapshot({ name: "transactions.aria.yml" });
