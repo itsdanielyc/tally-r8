@@ -170,6 +170,18 @@ describe("file versions", () => {
     expect(doc.rules).toEqual([]);
   });
 
+  it("a version 1 file that carries a category (the format allowed one) keeps it and its transactions' links", async () => {
+    const dir = tempDir();
+    const doc = JSON.parse(readFileSync(fixture("ledger-v1.json"), "utf8"));
+    doc.categories = [{ id: "c3", name: "Pay" }];
+    doc.transactions[1].categoryId = "c3";
+    doc.nextId = 4;
+    writeFileSync(join(dir, LEDGER_FILE), JSON.stringify(doc));
+    const snap = await (await openBackend(dir)).load();
+    expect(snap.categories).toEqual([{ id: "c3", name: "Pay" }]);
+    expect(snap.transactions.find((t) => t.id === "t2")?.categoryId).toBe("c3");
+  });
+
   it("version 2 as slice 3 wrote it keeps opening, categories and rules included", async () => {
     const dir = tempDir();
     copyFileSync(fixture("ledger-v2.json"), join(dir, LEDGER_FILE));
