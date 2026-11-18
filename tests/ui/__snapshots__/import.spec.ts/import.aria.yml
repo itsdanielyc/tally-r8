@@ -68,31 +68,36 @@
     - paragraph: 4 rows will be imported · 0 already in the ledger · 2 cannot be read
     - table "Preview":
       - rowgroup:
-        - row "Line Date Payee Amount (USD)":
+        - row "Line Date Payee Category Amount (USD)":
           - columnheader "Line"
           - columnheader "Date"
           - columnheader "Payee"
+          - columnheader "Category"
           - columnheader "Amount (USD)"
       - rowgroup:
-        - row /5 \d+-\d+-\d+ Employer GmbH \+\d+,\d+\.\d+/:
+        - row /5 \d+-\d+-\d+ Employer GmbH Uncategorised \+\d+,\d+\.\d+/:
           - cell "5"
           - cell /\d+-\d+-\d+/
           - cell "Employer GmbH"
+          - cell "Uncategorised"
           - cell /\+\d+,\d+\.\d+/
-        - row /6 \d+-\d+-\d+ Bakery; Miller -\d+\.\d+/:
+        - row /6 \d+-\d+-\d+ Bakery; Miller Uncategorised -\d+\.\d+/:
           - cell "6"
           - cell /\d+-\d+-\d+/
           - cell "Bakery; Miller"
+          - cell "Uncategorised"
           - cell /-\d+\.\d+/
-        - row /7 \d+-\d+-\d+ City power -\d+\.\d+/:
+        - row /7 \d+-\d+-\d+ City power Uncategorised -\d+\.\d+/:
           - cell "7"
           - cell /\d+-\d+-\d+/
           - cell "City power"
+          - cell "Uncategorised"
           - cell /-\d+\.\d+/
-        - row /8 \d+-\d+-\d+ Refund shop \+\d+\.\d+/:
+        - row /8 \d+-\d+-\d+ Refund shop Uncategorised \+\d+\.\d+/:
           - cell "8"
           - cell /\d+-\d+-\d+/
           - cell "Refund shop"
+          - cell "Uncategorised"
           - cell /\+\d+\.\d+/
     - region "Rows that cannot be read":
       - heading "Rows that cannot be read" [level=2]
