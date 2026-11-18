@@ -10,7 +10,7 @@ sandboxed and reaches them only through the typed preload bridge.
 |---|---|---|---|
 | UI: `src/app.ts`, `src/views/`, `src/dom.ts` | screens, their state, rendering a `Snapshot` | the adapter; pure queries in `core/` (format, filter, summary, import plan) | files, Electron, IPC, how the mock stores data |
 | Adapter: `src/api.ts`, `src/mock.ts` | one typed `TallyApi`: the native bridge, or the labelled mock (core service on memory, browser file chooser and download) | `window.tallyBridge`, or `core/` | screens |
-| Backend commands: `electron/ipc.ts`, `electron/preload.ts`, `electron/bridge.ts` | one IPC channel per `TallyApi` call; checks every argument the renderer sends | `core/service.ts`, `electron/store.ts`, `electron/dialogs.ts` | the DOM, the UI's state |
+| Backend commands: `electron/ipc.ts`, `electron/preload.ts`, `electron/bridge.ts`, `electron/backend.ts` | one IPC channel per `TallyApi` call; checks every argument the renderer sends | `core/service.ts`, `electron/store.ts`, `electron/dialogs.ts` | the DOM, the UI's state |
 | Domain: `core/` | pure rules: money, dates, validation, CSV parse and import plan, categories and rules, monthly summary, filter, export, the service (the one save pipeline and undo) | only `core/` and `contracts/` | I/O of any kind, Electron, the DOM |
 | Persistence: `electron/store.ts`, `electron/migrate.ts` | the ledger file: versioned JSON, migrations, crash-safe writes | `node:fs`, `contracts/` | IPC, the UI |
 | Platform: `electron/main.ts`, `electron/dialogs.ts` | window, app lifecycle, data folder, open and save dialogs | `electron` | ledger rules |
