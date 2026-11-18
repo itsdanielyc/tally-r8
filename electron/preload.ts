@@ -18,6 +18,8 @@ const bridge: ElectronBridge = {
   deleteRule: (id) => ipcRenderer.invoke(channels.deleteRule, id),
   applyRules: () => ipcRenderer.invoke(channels.applyRules),
   setBudget: (categoryId, amount) => ipcRenderer.invoke(channels.setBudget, categoryId, amount),
+  undo: () => ipcRenderer.invoke(channels.undo),
+  saveCsvFile: (suggestedName, text) => ipcRenderer.invoke(channels.saveCsvFile, suggestedName, text),
   pickCsvFile: () => ipcRenderer.invoke(channels.pickCsvFile),
 };
 

@@ -2,7 +2,7 @@
 // with a byte order mark) or the Windows Latin code page; anything that is not
 // valid UTF-8 is read as Windows-1252, so "Café" from an older bank export
 // arrives as "Café", not as replacement characters.
-import { readFile, stat } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 import type { PickedFile, Result } from "../contracts/tally";
 
@@ -13,6 +13,16 @@ export function decodeCsv(bytes: Uint8Array): string {
     return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return new TextDecoder("windows-1252").decode(bytes);
+  }
+}
+
+/** Exports start with a byte order mark so spreadsheet apps read accents right. */
+export async function writeCsvFile(path: string, text: string): Promise<Result<string>> {
+  try {
+    await writeFile(path, String.fromCharCode(0xfeff) + text, "utf8");
+    return { ok: true, value: path };
+  } catch (error) {
+    return { ok: false, error: { code: "io", message: `Tally could not write ${path}: ${(error as Error).message}` } };
   }
 }
 

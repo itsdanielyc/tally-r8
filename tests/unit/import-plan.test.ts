@@ -105,7 +105,9 @@ describe("duplicates", () => {
 
 describe("checkMapping", () => {
   it("accepts a well-formed mapping and refuses a malformed one", () => {
-    expect(ok(checkMapping(COMMA))).toEqual(COMMA);
+    expect(ok(checkMapping(COMMA))).toEqual({ ...COMMA, category: null, note: null });
+    expect(checkMapping({ ...COMMA, category: 9.5 }).ok).toBe(false);
+    expect(ok(checkMapping({ ...COMMA, category: 3, note: null })).category).toBe(3);
     expect(checkMapping({ ...COMMA, delimiter: ":" }).ok).toBe(false);
     expect(checkMapping({ ...COMMA, headerRow: -1 }).ok).toBe(false);
     expect(checkMapping({ ...COMMA, date: 1.5 }).ok).toBe(false);

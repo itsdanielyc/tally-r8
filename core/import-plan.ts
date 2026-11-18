@@ -2,9 +2,9 @@
 // add, the rows that could not be read (with line and reason), and the count
 // of rows already in the ledger. The preview and the import both call
 // planImport, so what the person sees is what gets imported.
-import type { ImportMapping, Result, TransactionInput } from "../contracts/tally";
+import type { Category, ImportMapping, Result, TransactionInput } from "../contracts/tally";
 import { DELIMITERS, parseCsv, type CsvRecord } from "./csv-parse";
-import { matchRule } from "./categories";
+import { CATEGORY_NAME_MAX, matchRule } from "./categories";
 import { parseBankDate } from "./dates";
 import type { Ledger } from "./ledger";
 import { currencyDigits, parseAmount } from "./money";
@@ -12,7 +12,8 @@ import { cleanText, PAYEE_MAX, validateInput } from "./transactions";
 
 const MAX_IMPORT_CHARS = 10 * 1024 * 1024;
 
-type ImportRow = TransactionInput & { line: number };
+/** A row to add. `newCategory`: a category name from the file that the ledger does not have yet. */
+type ImportRow = TransactionInput & { line: number; newCategory: string | null };
 type Rejected = { line: number; reason: string };
 export type ImportPlan = { rows: ImportRow[]; duplicates: number; rejected: Rejected[] };
 
@@ -34,6 +35,16 @@ function checkAmount(v: unknown): ImportMapping["amount"] | null {
   return null;
 }
 
+/** An optional column: null when absent, the index when valid, undefined when malformed. */
+const optional = (v: unknown): number | null | undefined => (v === undefined || v === null ? null : isIndex(v) ? v : undefined);
+
+/** The date order and decimal separator: the problem with them, or null. */
+function formatProblem(m: Record<string, unknown>): string | null {
+  if (m.dateOrder !== "YMD" && m.dateOrder !== "DMY" && m.dateOrder !== "MDY") return "Choose a date order.";
+  if (m.decimal !== "." && m.decimal !== ",") return "Choose a decimal separator.";
+  return null;
+}
+
 /** A mapping from the renderer, checked field by field. */
 export function checkMapping(value: unknown): Result<ImportMapping> {
   if (typeof value !== "object" || value === null) return invalid("The column mapping is missing.");
@@ -44,9 +55,13 @@ export function checkMapping(value: unknown): Result<ImportMapping> {
   if (!isIndex(m.date) || !isIndex(m.payee)) return invalid("Choose a column for the date and for the payee.");
   const amount = checkAmount(m.amount);
   if (!amount) return invalid("Choose an amount column, or two different debit and credit columns.");
-  if (m.dateOrder !== "YMD" && m.dateOrder !== "DMY" && m.dateOrder !== "MDY") return invalid("Choose a date order.");
-  if (m.decimal !== "." && m.decimal !== ",") return invalid("Choose a decimal separator.");
-  return { ok: true, value: { delimiter, headerRow: m.headerRow, date: m.date, payee: m.payee, amount, dateOrder: m.dateOrder, decimal: m.decimal } };
+  const problem = formatProblem(m);
+  if (problem) return invalid(problem);
+  const category = optional(m.category);
+  const note = optional(m.note);
+  if (category === undefined || note === undefined) return invalid("The category and note columns must be columns of the file, or none.");
+  const { dateOrder, decimal } = m as Pick<ImportMapping, "dateOrder" | "decimal">;
+  return { ok: true, value: { delimiter, headerRow: m.headerRow, date: m.date, payee: m.payee, amount, dateOrder, decimal, category, note } };
 }
 
 const ORDER_NAMES = { YMD: "year-month-day", DMY: "day-month-year", MDY: "month-day-year" } as const;
@@ -67,6 +82,18 @@ function readAmount(cells: string[], m: ImportMapping, digits: number): { value:
   return { value: debit.value !== 0 ? -Math.abs(debit.value) : Math.abs(credit.value) };
 }
 
+/**
+ * The category a row gets: the file's own category column when it has a name
+ * (an existing category matched ignoring case, or a new one), otherwise the
+ * first matching rule.
+ */
+function readCategory(cells: string[], m: ImportMapping, ledger: LedgerView, payee: string): { categoryId: string | null; newCategory: string | null } {
+  const named = m.category === null || m.category === undefined ? "" : cleanText(cells[m.category] ?? "").slice(0, CATEGORY_NAME_MAX);
+  if (named === "") return { categoryId: matchRule(ledger.rules, payee), newCategory: null };
+  const existing = ledger.categories.find((c) => c.name.toLowerCase() === named.toLowerCase());
+  return existing ? { categoryId: existing.id, newCategory: null } : { categoryId: null, newCategory: named };
+}
+
 function readRow(r: CsvRecord, m: ImportMapping, ledger: LedgerView, needed: number): ImportRow | Rejected {
   if (r.cells.length < needed) return { line: r.line, reason: `has ${r.cells.length} fields; the mapping needs ${needed}` };
   const rawDate = r.cells[m.date].trim();
@@ -76,10 +103,12 @@ function readRow(r: CsvRecord, m: ImportMapping, ledger: LedgerView, needed: num
   if (payee === "") return { line: r.line, reason: "payee is empty" };
   const amount = readAmount(r.cells, m, currencyDigits(ledger.settings.currency));
   if ("reason" in amount) return { line: r.line, reason: amount.reason };
-  const input: TransactionInput = { date, payee, amount: amount.value, categoryId: matchRule(ledger.rules, payee), note: "" };
+  const { categoryId, newCategory } = readCategory(r.cells, m, ledger, payee);
+  const note = m.note === null || m.note === undefined ? "" : (r.cells[m.note] ?? "");
+  const input: TransactionInput = { date, payee, amount: amount.value, categoryId, note };
   const checked = validateInput(input, ledger);
   if (!checked.ok) return { line: r.line, reason: checked.error.message };
-  return { ...checked.value, line: r.line };
+  return { ...checked.value, line: r.line, newCategory };
 }
 
 const key = (t: { date: string; amount: number; payee: string }) => `${t.date}|${t.amount}|${t.payee}`;
@@ -96,7 +125,8 @@ export function planImport(text: string, mapping: ImportMapping, ledger: LedgerV
   if (mapping.headerRow !== null && mapping.headerRow >= records.length) return invalid("The header row is not a row of the file.");
   const data = records.slice(mapping.headerRow === null ? 0 : mapping.headerRow + 1);
   const amountColumns = mapping.amount.kind === "signed" ? [mapping.amount.column] : [mapping.amount.debit, mapping.amount.credit];
-  const needed = Math.max(mapping.date, mapping.payee, ...amountColumns) + 1;
+  const optionalColumns = [mapping.category ?? -1, mapping.note ?? -1];
+  const needed = Math.max(mapping.date, mapping.payee, ...amountColumns, ...optionalColumns) + 1;
   const existing = new Map<string, number>();
   for (const t of ledger.transactions) existing.set(key(t), (existing.get(key(t)) ?? 0) + 1);
   const plan: ImportPlan = { rows: [], duplicates: 0, rejected: [] };
@@ -117,8 +147,25 @@ export function planImport(text: string, mapping: ImportMapping, ledger: LedgerV
   return { ok: true, value: plan };
 }
 
-/** Adds every planned row, in file order, with fresh ids. */
+/**
+ * Adds every planned row, in file order, with fresh ids, creating the
+ * categories the file names that the ledger does not have. A plan with no
+ * rows returns the ledger itself: nothing changed.
+ */
 export function applyImport(ledger: Ledger, plan: ImportPlan): Ledger {
-  const added = plan.rows.map((r, i) => ({ id: `t${ledger.nextId + i}`, date: r.date, payee: r.payee, amount: r.amount, categoryId: r.categoryId, note: r.note }));
-  return { ...ledger, transactions: [...ledger.transactions, ...added], nextId: ledger.nextId + added.length };
+  if (plan.rows.length === 0) return ledger;
+  let nextId = ledger.nextId;
+  const created: Category[] = [];
+  const idFor = (name: string): string => {
+    const found = created.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (found) return found.id;
+    const category: Category = { id: `c${nextId++}`, name, budget: null };
+    created.push(category);
+    return category.id;
+  };
+  const added = plan.rows.map((r) => {
+    const categoryId = r.newCategory === null ? r.categoryId : idFor(r.newCategory);
+    return { id: `t${nextId++}`, date: r.date, payee: r.payee, amount: r.amount, categoryId, note: r.note };
+  });
+  return { ...ledger, categories: [...ledger.categories, ...created], transactions: [...ledger.transactions, ...added], nextId };
 }

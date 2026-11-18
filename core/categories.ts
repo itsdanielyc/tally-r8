@@ -6,7 +6,7 @@ import type { Ledger } from "./ledger";
 import { MAX_AMOUNT } from "./money";
 import { cleanText } from "./transactions";
 
-const CATEGORY_NAME_MAX = 60;
+export const CATEGORY_NAME_MAX = 60;
 const RULE_TEXT_MAX = 100;
 
 const fail = (code: TallyError["code"], message: string, field?: string): { ok: false; error: TallyError } =>

@@ -68,6 +68,23 @@ const steps: Step[] = [
     return api.mergeCategories("c16", "c13");
   } },
   { name: "remove a budget", want: "ok", call: (api) => api.setBudget("c13", null) },
+  { name: "nothing to undo after a budget change", want: "not_found", call: (api) => api.undo() },
+  { name: "delete a transaction to undo", want: "ok", call: (api) => api.deleteTransaction("t4") },
+  { name: "undo the delete", want: "ok", call: (api) => api.undo() },
+  { name: "undo only once", want: "not_found", call: (api) => api.undo() },
+  { name: "merge, then undo the merge", want: "ok", call: async (api) => {
+    await api.createCategory("Snacks");
+    await api.mergeCategories("c17", "c13");
+    return api.undo();
+  } },
+  { name: "import with category and note columns, creating a category", want: "ok", call: (api) =>
+    api.importCsv("Date,Payee,Amount,Category,Note\r\n2026-11-03,Florist,-20.00,Gifts,\"for Sam, Friday\"\r\n2026-11-04,Baker,-3.00,snacks,", { ...MAPPING, delimiter: ",", decimal: ".", dateOrder: "YMD", category: 3, note: 4 }) },
+  { name: "undo the import", want: "ok", call: (api) => api.undo() },
+  { name: "any other change forgets what could be undone", want: "not_found", call: async (api) => {
+    await api.deleteTransaction("t5");
+    await api.createCategory("Later");
+    return api.undo();
+  } },
   { name: "load again", call: (api) => api.load() },
 ];
 
@@ -76,21 +93,26 @@ function comparable(value: unknown): unknown {
   return JSON.parse(JSON.stringify(value), (key, v: unknown) => (key === "file" ? "-" : v));
 }
 
+/** What a fresh open of the file must show: everything but undo, which lives in memory only. */
+function onDisk(value: unknown): unknown {
+  return JSON.parse(JSON.stringify(value), (key, v: unknown) => (key === "file" || key === "undo" ? "-" : v));
+}
+
 describe("contract: mock and real backend", () => {
   const dir = mkdtempSync(join(tmpdir(), "tally-contract-"));
   const mock = createMock();
   afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
   it("answer every call of the script identically, and the file keeps every answer", async () => {
-    let real = await openBackend(dir);
+    const real = await openBackend(dir);
     for (const step of steps) {
       const fromMock = comparable(await step.call(mock));
       const fromReal = comparable(await step.call(real));
       expect(fromReal, step.name).toEqual(fromMock);
       if (step.want) expect(outcome(fromReal), step.name).toBe(step.want);
-      // Reopen from disk: what the file holds must be what the mock holds.
-      real = await openBackend(dir);
-      expect(comparable(await real.load()), `${step.name}, after reopening`).toEqual(comparable(await mock.load()));
+      // A second, fresh open of the file: what the file holds must be what the mock holds.
+      const reopened = await openBackend(dir);
+      expect(onDisk(await reopened.load()), `${step.name}, after reopening`).toEqual(onDisk(await mock.load()));
     }
   });
 

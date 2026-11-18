@@ -33,6 +33,8 @@ const NAMES = {
   credit: /credit|deposit|paid in|money in|inflow/i,
   amount: /amount|betrag|importe|montant|value|sum/i,
   payee: /payee|description|merchant|name|details|narrative|memo|beneficiary|counterparty|reference|text/i,
+  category: /^categor/i,
+  note: /^(notes?|memo|comments?)$/i,
 };
 
 /** Share of a column's cells (among `rows`) that pass a test. */
@@ -113,6 +115,9 @@ function guessMapping(delimiter: Delimiter, headerRow: number | null, names: str
   const foundPayee = guessColumn(g, NAMES.payee, (cell) => !isAmount(cell) && !isDate(cell));
   const date = foundDate >= 0 ? foundDate : firstFree(g);
   const payee = foundPayee >= 0 ? foundPayee : firstFree(g);
+  // Optional columns only by their header's name: a guess from contents could take a bank's own reference column.
+  const category = pick(g, NAMES.category);
+  const note = pick(g, NAMES.note);
   return {
     delimiter,
     headerRow,
@@ -121,6 +126,8 @@ function guessMapping(delimiter: Delimiter, headerRow: number | null, names: str
     amount,
     dateOrder: guessDateOrder(rows, date),
     decimal: guessDecimal(rows, amount.kind === "split" ? [amount.debit, amount.credit] : [amount.column]),
+    category: category >= 0 ? category : null,
+    note: note >= 0 ? note : null,
   };
 }
 
