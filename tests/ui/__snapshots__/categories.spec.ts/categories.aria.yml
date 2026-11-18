@@ -1,0 +1,77 @@
+- main:
+  - region "Categories":
+    - heading "Categories" [level=1]
+    - paragraph: 3 categories
+    - group:
+      - form "Create a category":
+        - text: New category
+        - textbox "New category"
+        - button "Create"
+      - table "Categories":
+        - rowgroup:
+          - row "Name Transactions Actions":
+            - columnheader "Name"
+            - columnheader "Transactions"
+            - columnheader "Actions"
+        - rowgroup:
+          - row "Bills 0 Rename Delete":
+            - cell "Bills"
+            - cell "0"
+            - cell "Rename Delete":
+              - button "Rename"
+              - button "Delete"
+          - row "Eating out 0 Rename Delete":
+            - cell "Eating out"
+            - cell "0"
+            - cell "Rename Delete":
+              - button "Rename"
+              - button "Delete"
+          - row "Groceries 0 Rename Delete":
+            - cell "Groceries"
+            - cell "0"
+            - cell "Rename Delete":
+              - button "Rename"
+              - button "Delete"
+      - form "Merge categories":
+        - text: ""
+        - combobox "Merge":
+          - option "Bills" [selected]
+          - option "Eating out"
+          - option "Groceries"
+        - text: into
+        - combobox "into":
+          - option "Bills"
+          - option "Eating out" [selected]
+          - option "Groceries"
+        - button "Merge"
+        - paragraph: Every transaction and rule of the first category moves to the second, and the first is removed.
+      - region "Rules":
+        - heading "Rules" [level=2]
+        - paragraph: A rule gives a category to transactions whose payee contains its text, ignoring case. Imported rows get it on import. When several rules match, the oldest wins.
+        - form "Add a rule":
+          - text: Payee contains
+          - textbox "Payee contains"
+          - text: Use category
+          - combobox "Use category":
+            - option "Bills" [selected]
+            - option "Eating out"
+            - option "Groceries"
+          - button "Add rule"
+        - table "Rules":
+          - rowgroup:
+            - row "Payee contains Category Actions":
+              - columnheader "Payee contains"
+              - columnheader "Category"
+              - columnheader "Actions"
+          - rowgroup:
+            - row "\"corner\" Groceries Delete":
+              - cell "\"corner\""
+              - cell "Groceries"
+              - cell "Delete":
+                - button "Delete"
+            - row "\"electric\" Bills Delete":
+              - cell "\"electric\""
+              - cell "Bills"
+              - cell "Delete":
+                - button "Delete"
+        - button "Apply rules to uncategorised transactions"

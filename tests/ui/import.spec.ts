@@ -41,9 +41,9 @@ test("detects a comma file, previews the rows as they will be imported, and list
   await expect(page.getByLabel("Amount column")).toHaveValue("2");
   await expect(summary(page)).toHaveText("6 rows will be imported · 0 already in the ledger · 2 cannot be read");
   expect((await previewCells(page)).slice(0, 3)).toEqual([
-    ["2", "2026-10-01", "Employer, Inc. payroll", "+3,200.00"],
-    ["3", "2026-10-02", "Corner shop", "-12.50"],
-    ["4", "2026-10-03", 'Rent "October"', "-1,100.00"],
+    ["2", "2026-10-01", "Employer, Inc. payroll", "Uncategorised", "+3,200.00"],
+    ["3", "2026-10-02", "Corner shop", "Uncategorised", "-12.50"],
+    ["4", "2026-10-03", 'Rent "October"', "Uncategorised", "-1,100.00"],
   ]);
   await expect(page.getByRole("region", { name: "Rows that cannot be read" }).getByRole("listitem")).toHaveText([
     'Line 8: date "not a date" is not a year-month-day date',
@@ -73,17 +73,17 @@ test("skips a preamble, finds the header and reads debit and credit columns with
   await expect(page.getByLabel("Decimal separator")).toHaveValue(",");
   await expect(summary(page)).toHaveText("4 rows will be imported · 0 already in the ledger · 2 cannot be read");
   expect(await previewCells(page)).toEqual([
-    ["5", "2026-10-01", "Employer GmbH", "+3,200.00"],
-    ["6", "2026-10-02", "Bakery; Miller", "-4.80"],
-    ["7", "2026-10-03", "City power", "-64.20"],
-    ["8", "2026-10-04", "Refund shop", "+12.00"],
+    ["5", "2026-10-01", "Employer GmbH", "Uncategorised", "+3,200.00"],
+    ["6", "2026-10-02", "Bakery; Miller", "Uncategorised", "-4.80"],
+    ["7", "2026-10-03", "City power", "Uncategorised", "-64.20"],
+    ["8", "2026-10-04", "Refund shop", "Uncategorised", "+12.00"],
   ]);
 });
 
 test("every mapping change redraws the preview", async ({ page }) => {
   await pick(page, "bank-semicolon.csv");
   await page.getByLabel("Date order").selectOption("MDY");
-  expect((await previewCells(page))[0]).toEqual(["5", "2026-01-10", "Employer GmbH", "+3,200.00"]);
+  expect((await previewCells(page))[0]).toEqual(["5", "2026-01-10", "Employer GmbH", "Uncategorised", "+3,200.00"]);
   await page.getByLabel("Date order").selectOption("YMD");
   await expect(summary(page)).toHaveText("0 rows will be imported · 0 already in the ledger · 6 cannot be read");
   await expect(page.getByRole("region", { name: "Rows that cannot be read" }).getByRole("listitem").first())

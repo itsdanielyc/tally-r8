@@ -230,3 +230,18 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .rejected h2 { font-size: var(--text-md); margin: 0 0 var(--space-2); color: var(--danger); }
 .rejected ul { margin: 0; padding-left: var(--space-5); color: var(--text-2); }
 .import-actions { display: flex; gap: var(--space-2); padding-bottom: var(--space-5); }
+
+/* Categories and rules */
+.inline-row { display: flex; gap: var(--space-3); align-items: end; }
+.inline-row .grow { flex: 1; }
+.flash { margin: 0 0 var(--space-4); color: var(--income); height: var(--line); }
+.ledger.categories, .ledger.rules { margin-bottom: var(--space-4); }
+.ledger.categories th.amount { width: 128px; }
+.ledger.categories td.actions, .ledger.rules td.actions { width: 168px; }
+.ledger.categories th.actions, .ledger.rules th.actions { width: 168px; }
+.rename { display: flex; gap: var(--space-2); align-items: center; }
+.rename input { height: 28px; width: 240px; }
+.rename button { height: 28px; padding: 0 var(--space-2); }
+.rules-section h2 { font-size: var(--text-md); margin: var(--space-5) 0 var(--space-1); }
+.rules-section > .hint { margin: 0 0 var(--space-3); }
+.apply-rules { padding-bottom: var(--space-5); }
