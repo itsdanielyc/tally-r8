@@ -23,6 +23,13 @@ export type Category = {
   name: string;
 };
 
+/** "Payee contains this text, use this category". Matching ignores case. */
+export type Rule = {
+  id: string;
+  contains: string;
+  categoryId: string;
+};
+
 export type Settings = {
   /** ISO 4217 code; its minor-unit digits come from core/money.ts. */
   currency: string;
@@ -43,7 +50,10 @@ export type Snapshot = {
   file: string;
   settings: Settings;
   transactions: Transaction[];
+  /** Sorted by name, ignoring case. */
   categories: Category[];
+  /** In the order they were made; when several match, the first wins. */
+  rules: Rule[];
 };
 
 type TallyErrorCode = "invalid" | "not_found" | "readonly" | "io";
@@ -84,6 +94,8 @@ export type ImportOutcome = {
   rejected: number;
 };
 
+export type RulesOutcome = { snapshot: Snapshot; changed: number };
+
 /** Everything the ledger service answers, in the main process and in the mock. */
 export interface LedgerApi {
   load(): Promise<Snapshot>;
@@ -91,7 +103,17 @@ export interface LedgerApi {
   updateTransaction(id: string, input: TransactionInput): Promise<Result<Snapshot>>;
   deleteTransaction(id: string): Promise<Result<Snapshot>>;
   setCurrency(code: string): Promise<Result<Snapshot>>;
-  /** Imports every accepted row together, or none. */
+  createCategory(name: string): Promise<Result<Snapshot>>;
+  renameCategory(id: string, name: string): Promise<Result<Snapshot>>;
+  /** Its transactions become uncategorised; its rules go with it. */
+  deleteCategory(id: string): Promise<Result<Snapshot>>;
+  /** Moves every transaction and rule of `fromId` to `intoId`, then removes `fromId`. */
+  mergeCategories(fromId: string, intoId: string): Promise<Result<Snapshot>>;
+  createRule(contains: string, categoryId: string): Promise<Result<Snapshot>>;
+  deleteRule(id: string): Promise<Result<Snapshot>>;
+  /** Applies the rules to every uncategorised transaction. */
+  applyRules(): Promise<Result<RulesOutcome>>;
+  /** Imports every accepted row together, or none. Rules categorise the rows. */
   importCsv(text: string, mapping: ImportMapping): Promise<Result<ImportOutcome>>;
 }
 

@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "settings": {
+    "currency": "GBP"
+  },
+  "transactions": [
+    {
+      "id": "t1",
+      "date": "2026-10-30",
+      "payee": "Corner shop",
+      "amount": -1250,
+      "categoryId": "c2",
+      "note": ""
+    },
+    {
+      "id": "t4",
+      "date": "2026-10-31",
+      "payee": "Cinema",
+      "amount": -900,
+      "categoryId": null,
+      "note": "Friday"
+    }
+  ],
+  "categories": [
+    {
+      "id": "c2",
+      "name": "Groceries"
+    },
+    {
+      "id": "c3",
+      "name": "Eating out"
+    }
+  ],
+  "rules": [
+    {
+      "id": "r5",
+      "contains": "shop",
+      "categoryId": "c2"
+    }
+  ],
+  "nextId": 6
+}

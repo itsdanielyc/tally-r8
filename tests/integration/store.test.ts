@@ -31,7 +31,7 @@ describe("saving and reopening", () => {
     expect(existsSync(join(dir, LEDGER_FILE))).toBe(false);
     await service.addTransaction(tx("Corner shop"));
     const doc = JSON.parse(readFileSync(join(dir, LEDGER_FILE), "utf8"));
-    expect(doc.version).toBe(1);
+    expect(doc.version).toBe(2);
     expect(doc.transactions).toEqual([{ id: "t1", ...tx("Corner shop") }]);
   });
 
@@ -156,6 +156,43 @@ describe("file versions", () => {
       ["t2", "2026-10-31", "Employer", 300000, "October"],
       ["t1", "2026-10-30", "Corner shop", -1250, ""],
     ]);
+    expect(snap.rules).toEqual([]);
+  });
+
+  it("version 1 is written back as version 2 on the next change, keeping everything", async () => {
+    const dir = tempDir();
+    copyFileSync(fixture("ledger-v1.json"), join(dir, LEDGER_FILE));
+    await (await openBackend(dir)).createCategory("Groceries");
+    const doc = JSON.parse(readFileSync(join(dir, LEDGER_FILE), "utf8"));
+    expect(doc.version).toBe(2);
+    expect(doc.transactions).toHaveLength(2);
+    expect(doc.categories).toEqual([{ id: "c3", name: "Groceries" }]);
+    expect(doc.rules).toEqual([]);
+  });
+
+  it("a version 1 file that carries a category (the format allowed one) keeps it and its transactions' links", async () => {
+    const dir = tempDir();
+    const doc = JSON.parse(readFileSync(fixture("ledger-v1.json"), "utf8"));
+    doc.categories = [{ id: "c3", name: "Pay" }];
+    doc.transactions[1].categoryId = "c3";
+    doc.nextId = 4;
+    writeFileSync(join(dir, LEDGER_FILE), JSON.stringify(doc));
+    const snap = await (await openBackend(dir)).load();
+    expect(snap.categories).toEqual([{ id: "c3", name: "Pay" }]);
+    expect(snap.transactions.find((t) => t.id === "t2")?.categoryId).toBe("c3");
+  });
+
+  it("version 2 as slice 3 wrote it keeps opening, categories and rules included", async () => {
+    const dir = tempDir();
+    copyFileSync(fixture("ledger-v2.json"), join(dir, LEDGER_FILE));
+    const service = await openBackend(dir);
+    const snap = await service.load();
+    expect(snap.status).toEqual({ kind: "ok" });
+    expect(snap.categories).toEqual([{ id: "c3", name: "Eating out" }, { id: "c2", name: "Groceries" }]);
+    expect(snap.rules).toEqual([{ id: "r5", contains: "shop", categoryId: "c2" }]);
+    expect(snap.transactions.map((t) => [t.id, t.categoryId])).toEqual([["t4", null], ["t1", "c2"]]);
+    const r = await service.createCategory("Travel");
+    expect(r.ok && r.value.categories.find((c) => c.name === "Travel")?.id).toBe("c6");
   });
 
   it("a byte order mark from a hand edit does not stop the file opening", async () => {

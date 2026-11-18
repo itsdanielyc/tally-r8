@@ -26,4 +26,11 @@ export function registerIpc(service: TallyService): void {
   ipcMain.handle(channels.setCurrency, (_e, code: unknown) => service.setCurrency(text(code)));
   ipcMain.handle(channels.importCsv, (_e, csv: unknown, value: unknown) => service.importCsv(text(csv), mapping(value)));
   ipcMain.handle(channels.pickCsvFile, () => pickCsvFile());
+  ipcMain.handle(channels.createCategory, (_e, name: unknown) => service.createCategory(text(name)));
+  ipcMain.handle(channels.renameCategory, (_e, id: unknown, name: unknown) => service.renameCategory(text(id), text(name)));
+  ipcMain.handle(channels.deleteCategory, (_e, id: unknown) => service.deleteCategory(text(id)));
+  ipcMain.handle(channels.mergeCategories, (_e, fromId: unknown, intoId: unknown) => service.mergeCategories(text(fromId), text(intoId)));
+  ipcMain.handle(channels.createRule, (_e, contains: unknown, categoryId: unknown) => service.createRule(text(contains), text(categoryId)));
+  ipcMain.handle(channels.deleteRule, (_e, id: unknown) => service.deleteRule(text(id)));
+  ipcMain.handle(channels.applyRules, () => service.applyRules());
 }

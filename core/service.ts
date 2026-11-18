@@ -5,7 +5,8 @@
 //
 // The main process runs this service on the ledger file (electron/store.ts);
 // the labelled mock runs the very same service on memory (src/mock.ts).
-import type { ImportMapping, ImportOutcome, LedgerApi, LedgerStatus, Result, Snapshot, TransactionInput } from "../contracts/tally";
+import type { ImportMapping, ImportOutcome, LedgerApi, LedgerStatus, Result, RulesOutcome, Snapshot, TransactionInput } from "../contracts/tally";
+import * as categories from "./categories";
 import { applyImport, checkMapping, planImport } from "./import-plan";
 import { type Ledger, toSnapshot } from "./ledger";
 import { setCurrency } from "./settings";
@@ -66,6 +67,40 @@ export class TallyService implements LedgerApi {
       return { ok: true, value: applyImport(ledger, plan.value) };
     });
     return result.ok ? { ok: true, value: { snapshot: result.value, ...counts } } : result;
+  }
+
+  createCategory(name: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.createCategory(ledger, name));
+  }
+
+  renameCategory(id: string, name: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.renameCategory(ledger, id, name));
+  }
+
+  deleteCategory(id: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.deleteCategory(ledger, id));
+  }
+
+  mergeCategories(fromId: string, intoId: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.mergeCategories(ledger, fromId, intoId));
+  }
+
+  createRule(contains: string, categoryId: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.createRule(ledger, contains, categoryId));
+  }
+
+  deleteRule(id: string): Promise<Result<Snapshot>> {
+    return this.commit((ledger) => categories.deleteRule(ledger, id));
+  }
+
+  async applyRules(): Promise<Result<RulesOutcome>> {
+    let changed = 0;
+    const result = await this.commit((ledger) => {
+      const applied = categories.applyRules(ledger);
+      changed = applied.changed;
+      return { ok: true, value: applied.ledger };
+    });
+    return result.ok ? { ok: true, value: { snapshot: result.value, changed } } : result;
   }
 
   private snapshot(): Snapshot {

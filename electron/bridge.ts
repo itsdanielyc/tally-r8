@@ -13,5 +13,12 @@ export const channels = {
   deleteTransaction: "tally:delete-transaction",
   setCurrency: "tally:set-currency",
   importCsv: "tally:import-csv",
+  createCategory: "tally:create-category",
+  renameCategory: "tally:rename-category",
+  deleteCategory: "tally:delete-category",
+  mergeCategories: "tally:merge-categories",
+  createRule: "tally:create-rule",
+  deleteRule: "tally:delete-rule",
+  applyRules: "tally:apply-rules",
   pickCsvFile: "tally:pick-csv-file",
 } as const satisfies Record<keyof ElectronBridge, string>;
