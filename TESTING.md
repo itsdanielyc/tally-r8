@@ -24,8 +24,8 @@ Tier 1 is windows-x64, macos-arm64, linux-x64 (`keel.json`); there is no Tier
 |---|---|---|
 | Record, edit, delete a transaction; still there after a restart | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/transactions.test.ts`, `tests/unit/money.test.ts`, `tests/unit/service.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/store.test.ts`; L4/L5 `tests/ui/transactions.spec.ts`; L6 `tests/e2e/record.spec.ts` |
 | A save interrupted at any step leaves a ledger that opens; older file versions open | L3, L6 | L3 `tests/integration/store.test.ts` (a failure at each write step, unreadable and newer files, version fixtures); L6 `tests/e2e/record.spec.ts` (hard kill after a change, unreadable file left alone) |
-| Import a bank CSV: detect, map, preview, rejected rows, duplicates skipped, all or none | L1, L2, L3, L4, L5, L6 | |
-| A 2,000-row CSV imports in under five seconds | L3 | |
+| Import a bank CSV: detect, map, preview, rejected rows, duplicates skipped, all or none | L1, L2, L3, L4, L5, L6 | L1 `tests/unit/csv-parse.test.ts`, `tests/unit/import-plan.test.ts`; L2 `tests/contract/ledger.contract.test.ts`; L3 `tests/integration/import.test.ts` (decoding, all or none on disk); L4/L5 `tests/ui/import.spec.ts`; L6 `tests/e2e/import.spec.ts` (open-dialog bypass `TALLY_OPEN_PATH`) |
+| A 2,000-row CSV imports in under five seconds | L3, L6 | L3 `tests/integration/import.test.ts` (read from disk, imported, saved); L6 `tests/e2e/import.spec.ts` (timed from choosing the file to the list showing 2000) |
 | Categorise by hand and by payee rules; delete and merge categories | L1, L2, L3, L4, L5 | |
 | A month: totals per category, income against spending, budgets left or over | L1, L4, L5, L6 | |
 | Find, filter, export; the export imports back as the same transactions | L1, L2, L4, L5, L6 | |
