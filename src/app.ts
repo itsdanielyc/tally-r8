@@ -4,11 +4,13 @@
 import type { Result, Snapshot, TallyError } from "../contracts/tally";
 import type { Backend } from "./api";
 import { localIsoDate } from "../core/dates";
+import { type Filter, NO_FILTER } from "../core/filter";
 import { h, replace } from "./dom";
 import { categoriesView } from "./views/categories";
 import { type ImportState, importView } from "./views/import";
 import { settingsView } from "./views/settings";
 import { summaryView } from "./views/summary";
+import { undoBar } from "./views/undo-bar";
 import { transactionsView } from "./views/transactions";
 
 type ViewName = "transactions" | "import" | "categories" | "summary" | "settings";
@@ -23,7 +25,9 @@ type UiState = {
   month: string;
   budgetEditId: string | null;
   importing: ImportState;
-  /** A one-line result to show on the current screen, such as how many rules applied. */
+  /** What the Transactions list is filtered by; kept while moving between screens. */
+  filter: Filter;
+  /** A one-line result shown once, on the next drawing, such as how many rules applied. */
   flash: string | null;
   /** The control to focus after the next render, by element id. */
   focus: string | null;
@@ -49,7 +53,7 @@ const VIEWS: { name: ViewName; label: string; draw: (ctx: Ctx) => HTMLElement }[
 
 export async function startApp(root: HTMLElement, backend: Backend): Promise<void> {
   let snapshot = await backend.load();
-  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, renamingId: null, month: localIsoDate(new Date()).slice(0, 7), budgetEditId: null, importing: { file: null, result: null }, flash: null, focus: null };
+  const ui: UiState = { view: "transactions", editingId: null, confirmDeleteId: null, renamingId: null, month: localIsoDate(new Date()).slice(0, 7), budgetEditId: null, importing: { file: null, result: null }, filter: { ...NO_FILTER }, flash: null, focus: null };
   const nav = h("nav", { class: "sidebar", "aria-label": "Sections", "data-geo": "sidebar" });
   const main = h("main", { class: "main", "data-geo": "main" });
   const status = h("footer", { class: "statusbar", "data-geo": "statusbar" });
@@ -94,7 +98,9 @@ export async function startApp(root: HTMLElement, backend: Backend): Promise<voi
     drawNav();
     const view = VIEWS.find((v) => v.name === ui.view) ?? VIEWS[0];
     const banner = snapshot.status.kind === "ok" ? null : h("div", { class: "banner", role: "alert" }, snapshot.status.message);
-    replace(main, banner, view.draw(ctx()));
+    const flash = ui.flash ? h("p", { class: "flash", role: "status" }, ui.flash) : null;
+    ui.flash = null;
+    replace(main, banner, undoBar(ctx()), flash, view.draw(ctx()));
     drawStatus();
     if (ui.focus) document.getElementById(ui.focus)?.focus();
     ui.focus = null;
